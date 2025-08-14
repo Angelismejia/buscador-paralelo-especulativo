@@ -131,6 +131,77 @@ namespace BuscadorParaleloEspeculativo.UI.Models
             _frecuenciaPalabras = new ConcurrentDictionary<string, int>();
         }
 
+        // PARA JASON: Método principal para procesar archivos subidos desde la web
+        public async Task<MetricasProcesamiento> ProcesarArchivosSubidosAsync(IFormFile[] archivosSubidos, string carpetaTemporal = "uploads")
+        {
+            try
+            {
+                // Crear carpeta temporal si no existe
+                if (!Directory.Exists(carpetaTemporal))
+                    Directory.CreateDirectory(carpetaTemporal);
+
+                var rutasGuardadas = new List<string>();
+
+                // Guardar todos los archivos válidos al disco
+                foreach (var archivo in archivosSubidos)
+                {
+                    if (archivo.Length > 0 && EsArchivoValido(archivo.FileName))
+                    {
+                        var nombreSeguro = LimpiarNombreArchivo(archivo.FileName);
+                        var rutaArchivo = Path.Combine(carpetaTemporal, nombreSeguro);
+
+                        using (var stream = new FileStream(rutaArchivo, FileMode.Create))
+                        {
+                            await archivo.CopyToAsync(stream);
+                        }
+
+                        rutasGuardadas.Add(rutaArchivo);
+                    }
+                }
+
+                // Si no hay archivos válidos, retornar métricas vacías
+                if (rutasGuardadas.Count == 0)
+                {
+                    return new MetricasProcesamiento { ArchivosTotal = 0 };
+                }
+
+                // Procesar archivos y comparar rendimiento secuencial vs paralelo
+                var metricas = await ProcesarCarpetaCompletaAsync(rutasGuardadas.ToArray());
+
+                // Mostrar análisis detallado en consola
+                MostrarAnalisisRendimiento(metricas);
+
+                return metricas;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error procesando archivos: {ex.Message}");
+                return new MetricasProcesamiento { ArchivosTotal = 0 };
+            }
+        }
+
+        // Comparativa completa: ejecuta procesamiento secuencial y paralelo
+        public async Task<MetricasProcesamiento> ProcesarCarpetaCompletaAsync(string[] archivos)
+        {
+            if (archivos.Length == 0)
+                return new MetricasProcesamiento { ArchivosTotal = 0 };
+
+            Console.WriteLine($"\nIniciando análisis con {archivos.Length} archivos...\n");
+
+            // Primera pasada: procesamiento secuencial (uno por uno)
+            Console.WriteLine("PROCESAMIENTO SECUENCIAL...");
+            var resultadoSecuencial = await ProcesarSecuencialAsync(archivos);
+
+            // Limpiar estructuras para segunda prueba
+            LimpiarDatos();
+
+            // Segunda pasada: procesamiento paralelo (todos los cores)
+            Console.WriteLine("PROCESAMIENTO PARALELO...");
+            var resultadoParalelo = await ProcesarParaleloAsync(archivos);
+
+            return GenerarMetricas(resultadoSecuencial, resultadoParalelo);
+        }
+
         // Procesamiento secuencial: procesa archivos uno por uno
         private async Task<ResultadoProcesamiento> ProcesarSecuencialAsync(string[] rutasArchivos)
         {
@@ -408,6 +479,116 @@ namespace BuscadorParaleloEspeculativo.UI.Models
             return (conteos, contextos);
         }
 
+        // Muestra análisis detallado de rendimiento en consola
+        private void MostrarAnalisisRendimiento(MetricasProcesamiento metricas)
+        {
+            Console.WriteLine("\n" + new string('=', 50));
+            Console.WriteLine("     ANÁLISIS DE RENDIMIENTO PARALELO");
+            Console.WriteLine(new string('=', 50));
+
+            Console.WriteLine($"Tiempo Secuencial: {metricas.TiempoSecuencialSeg:F2}s");
+            Console.WriteLine($"Tiempo Paralelo: {metricas.TiempoParaleloSeg:F2}s");
+            Console.WriteLine($"Speedup: {metricas.Speedup:F2}x  {metricas.EvaluacionSpeedup}");
+            Console.WriteLine($"Eficiencia: {metricas.Eficiencia * 100:F1}%");
+            Console.WriteLine($"Palabras/seg: {metricas.PalabrasSecuencialPorSeg:N0} → {metricas.PalabrasParaleloPorSeg:N0}");
+            Console.WriteLine($"Archivos: {metricas.ArchivosProcesados}/{metricas.ArchivosTotal} procesados");
+            Console.WriteLine($"Palabras: {metricas.PalabrasUnicas:N0} únicas, {metricas.PalabrasTotal:N0} total");
+
+            Console.WriteLine(new string('=', 50) + "\n");
+        }
+
+        // =============== MÉTODOS PARA COMPAÑEROS ===============
+
+        // PARA ANGEL: Contextos de palabras para el modelo predictivo
+        public List<ContextoPalabra> ObtenerContextosPalabras()
+        {
+            return _contextoPalabras.ToList();
+        }
+
+        // PARA ANGEL: Frecuencias totales de todas las palabras
+        public Dictionary<string, int> ObtenerFrecuenciaPalabras()
+        {
+            return _frecuenciaPalabras.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+        }
+
+        // PARA JASON: Datos formateados para mostrar en la interfaz web
+        public object ObtenerDatosParaInterfaz()
+        {
+            var totalPalabras = _palabrasConOrigen.Sum(p => p.Value.Sum(o => o.Frecuencia));
+
+            return new
+            {
+                TotalPalabrasUnicas = _palabrasConOrigen.Count,
+                TotalPalabras = totalPalabras,
+                TotalContextos = _contextoPalabras.Count,
+                ArchivosEstado = _estadoArchivos.Select(a => new {
+                    Nombre = a.NombreArchivo,
+                    Estado = a.Estado,
+                    Palabras = a.PalabrasProcesadas,
+                    Tamaño = a.TamañoLegible
+                }),
+                PalabrasMasComunes = _frecuenciaPalabras
+                    .OrderByDescending(kvp => kvp.Value)
+                    .Take(20)
+                    .Select(kvp => new {
+                        Palabra = kvp.Key,
+                        Frecuencia = kvp.Value,
+                        Origenes = _palabrasConOrigen.TryGetValue(kvp.Key, out var origenes)
+                            ? origenes.Select(o => o.ArchivoOrigen).Distinct().ToList()
+                            : new List<string>()
+                    })
+            };
+        }
+
+        // PARA JASON: Buscar palabras por prefijo para autocompletado
+        public List<(string Palabra, string ArchivoOrigen, int Frecuencia)> BuscarPalabrasPorPrefijo(string prefijo, int limite = 10)
+        {
+            if (string.IsNullOrWhiteSpace(prefijo))
+                return new List<(string, string, int)>();
+
+            var prefijoLimpio = prefijo.ToLower().Trim();
+
+            return _palabrasConOrigen
+                .Where(p => p.Key.StartsWith(prefijoLimpio))
+                .SelectMany(p => p.Value.Select(o => (p.Key, o.ArchivoOrigen, o.Frecuencia)))
+                .OrderByDescending(x => x.Frecuencia)
+                .Take(limite)
+                .ToList();
+        }
+
+        // PARA JASON: Obtener archivos de origen de una palabra específica
+        public List<string> ObtenerOrigenDePalabra(string palabra)
+        {
+            if (_palabrasConOrigen.TryGetValue(palabra.ToLower(), out var origenes))
+            {
+                return origenes
+                    .Select(o => $"{o.ArchivoOrigen} ({o.Frecuencia} veces)")
+                    .Distinct()
+                    .ToList();
+            }
+            return new List<string>();
+        }
+
+        // PARA JASON: Todas las palabras procesadas con sus orígenes
+        public Dictionary<string, List<OrigenPalabra>> ObtenerTodasLasPalabras()
+        {
+            return _palabrasConOrigen.ToDictionary(
+                kvp => kvp.Key,
+                kvp => kvp.Value.ToList()
+            );
+        }
+
+        // PARA ISMER: Estado actual de todos los archivos (para testing)
+        public List<EstadoArchivo> ObtenerEstadoArchivos()
+        {
+            lock (_lockEstados)
+            {
+                return new List<EstadoArchivo>(_estadoArchivos);
+            }
+        }
+
+        // =============== MÉTODOS AUXILIARES ===============
+
         // Actualiza el estado de procesamiento de un archivo específico
         private void ActualizarEstadoArchivo(string rutaArchivo, string estado, int palabrasProcesadas = 0)
         {
@@ -436,6 +617,21 @@ namespace BuscadorParaleloEspeculativo.UI.Models
                     estadoExistente.TamañoBytes = tamañoBytes;
                 }
             }
+        }
+
+        // Genera métricas combinando resultados secuencial y paralelo
+        private MetricasProcesamiento GenerarMetricas(ResultadoProcesamiento secuencial, ResultadoProcesamiento paralelo)
+        {
+            return new MetricasProcesamiento
+            {
+                ArchivosTotal = _estadoArchivos.Count,
+                ArchivosProcesados = _estadoArchivos.Count(a => a.Estado == "Procesado"),
+                PalabrasUnicas = paralelo?.PalabrasUnicas ?? 0,
+                PalabrasTotal = paralelo?.PalabrasTotal ?? 0,
+                TiempoSecuencialMs = secuencial?.TiempoMs ?? 0,
+                TiempoParaleloMs = paralelo?.TiempoMs ?? 0,
+                EstadoArchivos = new List<EstadoArchivo>(_estadoArchivos)
+            };
         }
 
         // Verifica si una palabra está en la lista de stop words
