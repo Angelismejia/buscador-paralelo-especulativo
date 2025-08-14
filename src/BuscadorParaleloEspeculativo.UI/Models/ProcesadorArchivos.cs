@@ -39,6 +39,40 @@ namespace BuscadorParaleloEspeculativo.UI.Models
         public DateTime FechaEjecucion { get; set; }
     }
 
+    // Métricas de rendimiento comparando secuencial vs paralelo
+    public class MetricasProcesamiento
+    {
+        public int ArchivosTotal { get; set; }
+        public int ArchivosProcesados { get; set; }
+        public int PalabrasUnicas { get; set; }
+        public int PalabrasTotal { get; set; }
+        public long TiempoSecuencialMs { get; set; }
+        public long TiempoParaleloMs { get; set; }
+
+        // Cálculos automáticos de rendimiento
+        public double TiempoSecuencialSeg => TiempoSecuencialMs / 1000.0;
+        public double TiempoParaleloSeg => TiempoParaleloMs / 1000.0;
+        public double Speedup => TiempoParaleloMs > 0 ? (double)TiempoSecuencialMs / TiempoParaleloMs : 0;
+        public double Eficiencia => Speedup / Environment.ProcessorCount;
+        public double PalabrasSecuencialPorSeg => TiempoSecuencialSeg > 0 ? PalabrasTotal / TiempoSecuencialSeg : 0;
+        public double PalabrasParaleloPorSeg => TiempoParaleloSeg > 0 ? PalabrasTotal / TiempoParaleloSeg : 0;
+
+        // Evaluación del speedup obtenido
+        public string EvaluacionSpeedup
+        {
+            get
+            {
+                if (Speedup >= 3.5) return "Excelente";
+                if (Speedup >= 2.5) return "Muy Bueno";
+                if (Speedup >= 1.5) return "Bueno";
+                if (Speedup >= 1.1) return "Aceptable";
+                return "Pobre";
+            }
+        }
+
+        public List<EstadoArchivo> EstadoArchivos { get; set; } = new List<EstadoArchivo>();
+    }
+
     // Estado individual de procesamiento de cada archivo
     public class EstadoArchivo
     {
@@ -95,6 +129,162 @@ namespace BuscadorParaleloEspeculativo.UI.Models
             _contextoPalabras = new ConcurrentBag<ContextoPalabra>();
             _estadoArchivos = new List<EstadoArchivo>();
             _frecuenciaPalabras = new ConcurrentDictionary<string, int>();
+        }
+
+        // Procesamiento secuencial: procesa archivos uno por uno
+        private async Task<ResultadoProcesamiento> ProcesarSecuencialAsync(string[] rutasArchivos)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var palabrasSecuencial = new Dictionary<string, List<OrigenPalabra>>();
+            int archivosProcesados = 0;
+            int palabrasTotal = 0;
+
+            // Procesar cada archivo en orden secuencial
+            foreach (var rutaArchivo in rutasArchivos)
+            {
+                try
+                {
+                    ActualizarEstadoArchivo(rutaArchivo, "Procesando...");
+
+                    // Extraer palabras del archivo actual
+                    var resultado = await ExtraerPalabrasDelArchivoAsync(rutaArchivo);
+                    var nombreArchivo = Path.GetFileName(rutaArchivo);
+
+                    // Guardar palabras con su origen
+                    foreach (var palabra in resultado.Palabras)
+                    {
+                        if (!palabrasSecuencial.ContainsKey(palabra.Key))
+                            palabrasSecuencial[palabra.Key] = new List<OrigenPalabra>();
+
+                        palabrasSecuencial[palabra.Key].Add(new OrigenPalabra
+                        {
+                            ArchivoOrigen = nombreArchivo,
+                            Frecuencia = palabra.Value,
+                            FechaProcesamiento = DateTime.Now,
+                            UbicacionEnTexto = "Procesamiento secuencial"
+                        });
+                    }
+
+                    palabrasTotal += resultado.Palabras.Values.Sum();
+                    archivosProcesados++;
+                    ActualizarEstadoArchivo(rutaArchivo, "Procesado", resultado.Palabras.Values.Sum());
+                }
+                catch (Exception ex)
+                {
+                    ActualizarEstadoArchivo(rutaArchivo, $"Error: {ex.Message}");
+                }
+            }
+
+            stopwatch.Stop();
+
+            return new ResultadoProcesamiento
+            {
+                Metodo = "Secuencial",
+                TiempoMs = stopwatch.ElapsedMilliseconds,
+                ArchivosProcesados = archivosProcesados,
+                PalabrasUnicas = palabrasSecuencial.Count,
+                PalabrasTotal = palabrasTotal,
+                PalabrasConOrigen = palabrasSecuencial,
+                FechaEjecucion = DateTime.Now
+            };
+        }
+
+        // Procesamiento paralelo: usa todos los cores del procesador simultáneamente
+        private async Task<ResultadoProcesamiento> ProcesarParaleloAsync(string[] rutasArchivos)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            _palabrasConOrigen.Clear();
+            int archivosProcesados = 0;
+            int palabrasTotal = 0;
+
+            // Configurar paralelismo máximo según cores disponibles
+            var paralelismoOpciones = new ParallelOptions
+            {
+                MaxDegreeOfParallelism = Environment.ProcessorCount
+            };
+
+            await Task.Run(() =>
+            {
+                // Procesar todos los archivos en paralelo
+                Parallel.ForEach(rutasArchivos, paralelismoOpciones, rutaArchivo =>
+                {
+                    try
+                    {
+                        ActualizarEstadoArchivo(rutaArchivo, "Procesando...");
+
+                        // Extraer palabras del archivo actual
+                        var resultado = ExtraerPalabrasDelArchivoAsync(rutaArchivo).Result;
+                        var nombreArchivo = Path.GetFileName(rutaArchivo);
+
+                        // Agregar palabras a estructuras thread-safe
+                        foreach (var palabra in resultado.Palabras)
+                        {
+                            _palabrasConOrigen.AddOrUpdate(
+                                palabra.Key,
+                                new ConcurrentBag<OrigenPalabra>
+                                {
+                                    new OrigenPalabra
+                                    {
+                                        ArchivoOrigen = nombreArchivo,
+                                        Frecuencia = palabra.Value,
+                                        FechaProcesamiento = DateTime.Now,
+                                        UbicacionEnTexto = "Procesamiento paralelo"
+                                    }
+                                },
+                                (key, existingBag) =>
+                                {
+                                    existingBag.Add(new OrigenPalabra
+                                    {
+                                        ArchivoOrigen = nombreArchivo,
+                                        Frecuencia = palabra.Value,
+                                        FechaProcesamiento = DateTime.Now,
+                                        UbicacionEnTexto = "Procesamiento paralelo"
+                                    });
+                                    return existingBag;
+                                });
+
+                            // Actualizar frecuencias totales de forma thread-safe
+                            _frecuenciaPalabras.AddOrUpdate(palabra.Key, palabra.Value,
+                                (key, oldValue) => oldValue + palabra.Value);
+                        }
+
+                        // Agregar contextos para ANGEL
+                        foreach (var contexto in resultado.Contextos)
+                        {
+                            _contextoPalabras.Add(contexto);
+                        }
+
+                        // Actualizar contadores de forma thread-safe
+                        Interlocked.Add(ref palabrasTotal, resultado.Palabras.Values.Sum());
+                        Interlocked.Increment(ref archivosProcesados);
+
+                        ActualizarEstadoArchivo(rutaArchivo, "Procesado", resultado.Palabras.Values.Sum());
+                    }
+                    catch (Exception ex)
+                    {
+                        ActualizarEstadoArchivo(rutaArchivo, $"Error: {ex.Message}");
+                    }
+                });
+            });
+
+            stopwatch.Stop();
+
+            // Convertir estructuras concurrentes a formato estándar
+            var palabrasConOrigenDict = _palabrasConOrigen.ToDictionary(
+                kvp => kvp.Key,
+                kvp => kvp.Value.ToList()
+            );
+
+            return new ResultadoProcesamiento
+            {
+                Metodo = "Paralelo",
+                TiempoMs = stopwatch.ElapsedMilliseconds,
+                ArchivosProcesados = archivosProcesados,
+                PalabrasUnicas = palabrasConOrigenDict.Count,
+                PalabrasTotal = palabrasTotal,
+                PalabrasConOrigen = palabrasConOrigenDict,
+                FechaEjecucion = DateTime.Now
+            };
         }
 
         // Extrae texto de diferentes tipos de archivo (TXT, DOCX, PDF)
@@ -216,6 +406,36 @@ namespace BuscadorParaleloEspeculativo.UI.Models
             }
 
             return (conteos, contextos);
+        }
+
+        // Actualiza el estado de procesamiento de un archivo específico
+        private void ActualizarEstadoArchivo(string rutaArchivo, string estado, int palabrasProcesadas = 0)
+        {
+            var nombreArchivo = Path.GetFileName(rutaArchivo);
+            var tamañoBytes = File.Exists(rutaArchivo) ? new FileInfo(rutaArchivo).Length : 0;
+
+            lock (_lockEstados)
+            {
+                var estadoExistente = _estadoArchivos.FirstOrDefault(a => a.NombreArchivo == nombreArchivo);
+
+                if (estadoExistente == null)
+                {
+                    _estadoArchivos.Add(new EstadoArchivo
+                    {
+                        NombreArchivo = nombreArchivo,
+                        RutaCompleta = rutaArchivo,
+                        Estado = estado,
+                        PalabrasProcesadas = palabrasProcesadas,
+                        TamañoBytes = tamañoBytes
+                    });
+                }
+                else
+                {
+                    estadoExistente.Estado = estado;
+                    estadoExistente.PalabrasProcesadas = palabrasProcesadas;
+                    estadoExistente.TamañoBytes = tamañoBytes;
+                }
+            }
         }
 
         // Verifica si una palabra está en la lista de stop words
