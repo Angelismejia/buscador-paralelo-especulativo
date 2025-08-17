@@ -101,7 +101,9 @@ namespace BuscadorParaleloEspeculativo.UI.Models
         public int Posicion { get; set; }
     }
 
-    // CLASE PRINCIPAL - CANDY: Procesamiento paralelo de archivos de texto
+    , "siempre", "ejemplo", "tiempo", "casos"
+        };
+// CLASE PRINCIPAL - CANDY: Procesamiento paralelo de archivos de texto
     public class ProcesadorArchivos
     {
         // Estructuras thread-safe para procesamiento paralelo
@@ -109,19 +111,23 @@ namespace BuscadorParaleloEspeculativo.UI.Models
         private readonly ConcurrentBag<ContextoPalabra> _contextoPalabras;
         private readonly List<EstadoArchivo> _estadoArchivos;
         private readonly object _lockEstados = new object();
-        private readonly ConcurrentDictionary<string, int> _frecuenciaPalabras;
+        ConcurrentDictionary<string, List<string>> indice = new ConcurrentDictionary<string, List<string>>();
+
 
         // Lista de palabras que no aportan valor semántico (stop words en español)
         private static readonly HashSet<string> PalabrasVacias = new HashSet<string>
         {
-            "que", "para", "con", "por", "como", "más", "pero", "sus", "les", "una", "del",
-            "los", "las", "son", "fue", "han", "muy", "hay", "sin", "ser", "está", "todo",
-            "también", "donde", "cuando", "sobre", "desde", "hasta", "entre", "mientras",
-            "este", "esta", "estos", "estas", "otro", "otros", "otra", "otras", "mismo", "misma",
-            "será", "pueden", "solo", "cada", "tiene", "hacer", "después", "forma", "bien",
-            "aquí", "tanto", "estado", "durante", "siempre", "ejemplo", "tiempo", "casos"
-        };
-
+             "a", "ante", "bajo", "cabe", "con", "contra", "de", "desde", "durante",
+            "en", "entre", "hacia", "hasta", "mediante", "para", "por",
+            "según", "sin", "so", "sobre", "tras",
+            "el", "la", "los", "las", "un", "una", "unos", "unas",
+            "y", "o", "u", "que", "como", "es", "son", "ser", "fue", "fueron",
+            "este", "esta", "estos", "estas", "se", "su", "sus", "lo", "le", "les", "del", "al",
+            "más", "pero", "sus", "les", "una", "los", "las", "son", "han", "muy", "hay",
+            "sin", "está", "todo", "también", "donde", "cuando", "sobre", "mientras",
+            "otro", "otros", "otra", "otras", "mismo", "misma", "será", "pueden",
+            "solo", "cada", "tiene", "hacer", "después", "forma", "bien", "aquí",
+            "tanto", "estado"
         // Constructor: inicializa todas las estructuras de datos
         public ProcesadorArchivos()
         {
@@ -288,7 +294,9 @@ namespace BuscadorParaleloEspeculativo.UI.Models
                         var nombreArchivo = Path.GetFileName(rutaArchivo);
 
                         // Agregar palabras a estructuras thread-safe
-                        foreach (var palabra in resultado.Palabras)
+                        // Agregar palabras a estructuras thread-safe, filtrando stopwords
+                        foreach (var palabra in resultado.Palabras
+                            .Where(p => !PalabrasVacias.Contains(p.Key) && p.Key.Length > 1))
                         {
                             _palabrasConOrigen.AddOrUpdate(
                                 palabra.Key,
@@ -319,6 +327,7 @@ namespace BuscadorParaleloEspeculativo.UI.Models
                                 (key, oldValue) => oldValue + palabra.Value);
                         }
 
+
                         // Agregar contextos para ANGEL
                         foreach (var contexto in resultado.Contextos)
                         {
@@ -345,6 +354,13 @@ namespace BuscadorParaleloEspeculativo.UI.Models
                 kvp => kvp.Key,
                 kvp => kvp.Value.ToList()
             );
+
+            var todasLasPalabras = palabrasConOrigenDict.Keys.ToList();
+            var modelo = new ModeloPrediccion();
+            modelo.EntrenarModelo(todasLasPalabras);
+
+            var sugerencias = modelo.PredecirSiguientePalabra("la programación", 3);
+            Console.WriteLine("Sugerencias: " + string.Join(", ", sugerencias));
 
             return new ResultadoProcesamiento
             {
@@ -451,10 +467,12 @@ namespace BuscadorParaleloEspeculativo.UI.Models
             var textoLimpio = Regex.Replace(texto.ToLower(), @"[^a-záéíóúüñ\s]", " ");
 
             // Dividir en palabras válidas (mínimo 3 caracteres, no stop words)
-            var palabras = textoLimpio
-                .Split(new[] { ' ', '\n', '\r', '\t' }, StringSplitOptions.RemoveEmptyEntries)
-                .Where(p => p.Length >= 3 && !EsPalabraVacia(p))
-                .ToArray();
+            var palabras = texto
+            .ToLower()
+            .Split(new[] { ' ', '\t', '\r', '\n', '.', ',', ';', ':', '!', '?', '\"', '(', ')', '[', ']', '{', '}' },
+            StringSplitOptions.RemoveEmptyEntries)
+            .Where(p => !PalabrasVacias.Contains(p) && p.Length > 1);
+
 
             // Contar frecuencias de cada palabra
             var conteos = new Dictionary<string, int>();
@@ -644,7 +662,7 @@ namespace BuscadorParaleloEspeculativo.UI.Models
         private bool EsArchivoValido(string nombreArchivo)
         {
             var extensionesValidas = new[] { ".txt", ".pdf", ".docx" };
-            return extensionesValidas.Contains(Path.GetExtension(nombreArchivo).ToLower());
+            return extensionesValidas.Contains(Path.GetExtension(nombreArchivo).ToLower());a
         }
 
         // Limpia nombres de archivo de caracteres peligrosos
