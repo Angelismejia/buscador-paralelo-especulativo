@@ -674,3 +674,4 @@ namespace BuscadorParaleloEspeculativo.UI.Models
         }
     }
 }
+// Fin de la clase ProcesadorArchivos
