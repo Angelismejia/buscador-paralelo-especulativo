@@ -19,23 +19,23 @@ namespace BuscadorParaleloEspeculativo.UI.Models
     // Datos de dónde viene cada palabra procesada
     public class OrigenPalabra
     {
-        public string ArchivoOrigen { get; set; } = string.Empty;
+        public string ArchivoOrigen { get; set; }
         public int Frecuencia { get; set; }
         public DateTime FechaProcesamiento { get; set; }
-        public string UbicacionEnTexto { get; set; } = string.Empty;
+        public string UbicacionEnTexto { get; set; }
     }
 
     // Resultados de procesamiento (secuencial o paralelo)
     public class ResultadoProcesamiento
     {
-        public string Metodo { get; set; } = string.Empty;
+        public string Metodo { get; set; }
         public long TiempoMs { get; set; }
         public double TiempoSeg => TiempoMs / 1000.0;
         public int ArchivosProcesados { get; set; }
         public int PalabrasUnicas { get; set; }
         public int PalabrasTotal { get; set; }
         public double PalabrasPorSegundo => TiempoSeg > 0 ? PalabrasTotal / TiempoSeg : 0;
-        public Dictionary<string, List<OrigenPalabra>> PalabrasConOrigen { get; set; } = new Dictionary<string, List<OrigenPalabra>>();
+        public Dictionary<string, List<OrigenPalabra>> PalabrasConOrigen { get; set; }
         public DateTime FechaEjecucion { get; set; }
     }
 
@@ -76,9 +76,9 @@ namespace BuscadorParaleloEspeculativo.UI.Models
     // Estado individual de procesamiento de cada archivo
     public class EstadoArchivo
     {
-        public string NombreArchivo { get; set; } = string.Empty;
-        public string RutaCompleta { get; set; } = string.Empty;
-        public string Estado { get; set; } = string.Empty;
+        public string NombreArchivo { get; set; }
+        public string RutaCompleta { get; set; }
+        public string Estado { get; set; }
         public int PalabrasProcesadas { get; set; }
         public long TamañoBytes { get; set; }
         public string TamañoLegible => FormatearTamaño(TamañoBytes);
@@ -95,9 +95,9 @@ namespace BuscadorParaleloEspeculativo.UI.Models
     // PARA ANGEL: Contexto de palabras para modelo predictivo
     public class ContextoPalabra
     {
-        public string PalabraActual { get; set; } = string.Empty;
-        public string PalabraAnterior { get; set; } = string.Empty;
-        public string ArchivoOrigen { get; set; } = string.Empty;
+        public string PalabraActual { get; set; }
+        public string PalabraAnterior { get; set; }
+        public string ArchivoOrigen { get; set; }
         public int Posicion { get; set; }
     }
 
@@ -672,4 +672,3 @@ namespace BuscadorParaleloEspeculativo.UI.Models
         }
       
     }
-}

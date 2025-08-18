@@ -1,4 +1,4 @@
-﻿using BuscadorParaleloEspeculativo.UI.Models;
+using BuscadorParaleloEspeculativo.UI.Models;
 using Microsoft.AspNetCore.Http.Features;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -70,7 +70,7 @@ app.UseAuthorization();
 
 //Mapear tanto Razor Pages como Controllers
 app.MapRazorPages();
-app.MapControllers(); // Esto es para que funcionen los endpoints /api/
+app.MapControllers();// Esto es para que funcionen los endpoints /api/
 
 // Logging de inicio
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
