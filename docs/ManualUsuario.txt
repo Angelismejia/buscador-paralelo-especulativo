@@ -1,6 +1,7 @@
 Interfaz Principal
 La aplicación presenta un diseño moderno con cuatro módulos principales distribuidos en una interfaz intuitiva.
 
+https://github.com/Angelismejia/buscador-paralelo-especulativo/issues/14#issue-3332437334
 
  Procesamiento de Archivos (Módulo Superior Izquierdo)
  Función: Cargar y procesar archivos de texto para análisis
@@ -51,6 +52,7 @@ Paso 2: Monitorear Rendimiento
 
 
  
+
 
 
 
