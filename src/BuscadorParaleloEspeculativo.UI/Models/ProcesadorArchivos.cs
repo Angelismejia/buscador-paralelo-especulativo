@@ -669,6 +669,6 @@ namespace BuscadorParaleloEspeculativo.UI.Models
             {
                 _estadoArchivos.Clear();
             }
-        }
-    }
-}
+        }
+      
+    }
