@@ -1,3 +1,8 @@
+// ==========================================================================
+// SISTEMA DE PREDICCIÓN DE TEXTO - CORREGIDO PARA FUNCIONAR CON BACKEND
+// Developed by: CANDY • ANGEL • JASON • ISMER • INDI
+// ==========================================================================
+
 class TextPredictionSystem {
     constructor() {
         this.files = [];
@@ -15,7 +20,7 @@ class TextPredictionSystem {
     }
 
     initializeElements() {
-        // Upload elements
+        // Upload elements //
         this.uploadZone = document.getElementById('uploadZone');
         this.fileInput = document.getElementById('fileInput');
         this.fileList = document.getElementById('fileList');
@@ -376,7 +381,7 @@ class TextPredictionSystem {
             if (this.isModelReady) {
                 message += `Modelo entrenado con ${result.bigramas || 0} bigramas y ${result.trigramas || 0} trigramas 🎉`;
             } else {
-                message += 'Advertencia: Modelo no se entrenó correctamente ⚠';
+                message += 'Advertencia: Modelo no se entrenó correctamente ⚠️';
             }
 
             this.showNotification(message, this.isModelReady ? 'success' : 'warning');
@@ -828,7 +833,7 @@ class TextPredictionSystem {
         if (this.suggestionsGrid) {
             this.suggestionsGrid.innerHTML = `
                 <div class="warning-message">
-                    <span class="warning-icon">⚠</span>
+                    <span class="warning-icon">⚠️</span>
                     <div class="warning-content">
                         <strong>Modelo no entrenado</strong>
                         <p>Procese archivos primero para obtener predicciones inteligentes basadas en su contenido</p>
@@ -944,10 +949,10 @@ class TextPredictionSystem {
         const icons = {
             'success': '✅',
             'error': '❌',
-            'warning': '⚠',
-            'info': 'ℹ'
+            'warning': '⚠️',
+            'info': 'ℹ️'
         };
-        return icons[type] || 'ℹ';
+        return icons[type] || 'ℹ️';
     }
 
     getNotificationColor(type) {
@@ -1370,7 +1375,7 @@ function initializeSystem() {
                     if (status) {
                         console.log('[Sistema] ✅ Conectividad con backend verificada');
                     } else {
-                        console.log('[Sistema] ⚠ Backend no responde, verifique controladores');
+                        console.log('[Sistema] ⚠️ Backend no responde, verifique controladores');
                     }
                 });
         }, 1000);
@@ -1418,3 +1423,4 @@ window.addEventListener('load', () => {
         initializeSystem();
     }
 });
+

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using BuscadorParaleloEspeculativo.UI.Models;
@@ -180,9 +180,9 @@ public class ModeloPrediccion
             string claveTrigrama = $"{palabrasContexto[^2]} {palabrasContexto[^1]}";
             Console.WriteLine($"[ModeloPrediccion] Buscando trigrama: '{claveTrigrama}'");
 
-            if (trigramas.TryGetValue(claveTrigrama, out var trigramaCandidatos))
+            if (trigramas.ContainsKey(claveTrigrama))
             {
-                candidatos = trigramaCandidatos;
+                candidatos = trigramas[claveTrigrama];
                 metodoUsado = "trigrama";
                 Console.WriteLine($"[ModeloPrediccion] ✓ Encontrado trigrama con {candidatos.Count} candidatos");
             }
@@ -199,9 +199,9 @@ public class ModeloPrediccion
             string ultimaPalabra = palabrasContexto[^1];
             Console.WriteLine($"[ModeloPrediccion] Buscando bigrama: '{ultimaPalabra}' -> ?");
 
-            if (bigramas.TryGetValue(ultimaPalabra, out var bigramaCandidatos))
+            if (bigramas.ContainsKey(ultimaPalabra))
             {
-                candidatos = bigramaCandidatos;
+                candidatos = bigramas[ultimaPalabra];
                 metodoUsado = "bigrama";
                 Console.WriteLine($"[ModeloPrediccion] ✓ Encontrado bigrama con {candidatos.Count} candidatos");
             }

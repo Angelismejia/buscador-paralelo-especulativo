@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using BuscadorParaleloEspeculativo.UI.Models;
 using System.ComponentModel.DataAnnotations;
 

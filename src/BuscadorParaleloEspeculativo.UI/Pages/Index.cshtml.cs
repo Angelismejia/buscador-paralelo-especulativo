@@ -26,14 +26,14 @@ namespace BuscadorParaleloEspeculativo.UI.Pages
             _logger.LogInformation("Sistema de Predicción de Texto Especulativo iniciado");
         }
 
-        /// <summary>
-        /// Procesa los archivos subidos utilizando el procesamiento paralelo de CANDY - VERSIÓN CORREGIDA
-        /// </summary>
+        
+        /// Procesa los archivos subidos utilizando el procesamiento paralelo de CANDY 
+        
         public async Task<IActionResult> OnPostProcesarArchivosAsync()
         {
             try
             {
-                // Corrección para CS8602: verificación null más explícita
+                //  verificación null más explícita
                 if (ArchivosSubidos == null || !ArchivosSubidos.Any())
                 {
                     return new JsonResult(new { 
@@ -57,7 +57,7 @@ namespace BuscadorParaleloEspeculativo.UI.Pages
                     _modeloPrediccion.EntrenarModelo(contextos);
                 }
 
-                // Calcular métricas mejoradas - CORRECCIÓN para CS8917 y CS0019
+                // Calcular métricas mejoradas
                 var resultado = new
                 {
                     success = true,
@@ -65,7 +65,7 @@ namespace BuscadorParaleloEspeculativo.UI.Pages
                     tiempoParalelo = metricas.TiempoParaleloSeg,
                     speedup = Math.Round(metricas.Speedup, 2),
                     eficiencia = Math.Round(metricas.Eficiencia * 100, 1),
-                    palabrasSegSecuencial = (int)metricas.PalabrasSecuencialPorSeg, // Corrección CS0019
+                    palabrasSegSecuencial = (int)metricas.PalabrasSecuencialPorSeg, 
                     palabrasSegParalelo = (int)metricas.PalabrasParaleloPorSeg,
                     palabrasUnicas = metricas.PalabrasUnicas,
                     palabrasTotales = metricas.PalabrasTotal,
