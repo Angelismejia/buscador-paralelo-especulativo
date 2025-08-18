@@ -1,0 +1,2 @@
+# buscador-paralelo-especulativo
+
