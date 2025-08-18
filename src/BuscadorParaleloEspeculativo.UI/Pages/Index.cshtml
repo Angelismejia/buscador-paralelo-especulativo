@@ -1,10 +1,208 @@
 ﻿@page
 @model IndexModel
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "Sistema de Predicción de Texto Especulativo";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="hero-section">
+    <div class="floating-particles"></div>
+    <div class="content-wrapper">
+        <header class="main-header">
+            <h1 class="system-title">
+                <span class="title-part" data-text="Sistema">Sistema</span>
+                <span class="title-part" data-text="de">de</span>
+                <span class="title-part" data-text="Predicción">Predicción</span>
+                <span class="title-part" data-text="de">de</span>
+                <span class="title-part" data-text="Texto">Texto</span>
+                <span class="title-part highlight" data-text="Especulativo">Especulativo</span>
+            </h1>
+            <div class="team-credits">
+                <div class="credit-item">CANDY • ANGEL • JASON • ISMER • INDI</div>
+            </div>
+        </header>
+
+        <div class="main-grid">
+
+            <div class="glass-card upload-section">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="icon-wrapper">📁</span>
+                        Procesamiento de Archivos
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="upload-zone" id="uploadZone">
+                        <div class="upload-visual">
+                            <div class="upload-icon">🛗</div>
+                            <div class="upload-rings">
+                                <div class="ring"></div>
+                                <div class="ring"></div>
+                                <div class="ring"></div>
+                            </div>
+                        </div>
+                        <h3 class="upload-title">Arrastra archivos aquí</h3>
+                        <p class="upload-subtitle">o haz clic para seleccionar</p>
+                        <div class="supported-formats">
+                            <span class="format-tag">.TXT</span>
+                            <span class="format-tag">.DOCX</span>
+                            <span class="format-tag">.PDF</span>
+                        </div>
+                        <input type="file" id="fileInput" class="file-input" multiple accept=".txt,.docx,.pdf">
+                    </div>
+                    
+                    <div class="file-list" id="fileList"></div>
+                    
+                    <div class="action-buttons">
+                        <button class="neo-btn primary" id="processBtn" disabled>
+                            <span class="btn-content">
+                                <span class="btn-icon">⚡</span>
+                                <span class="btn-text">Procesar Archivos</span>
+                            </span>
+                            <div class="btn-shine"></div>
+                        </button>
+                        <button class="neo-btn secondary" id="clearBtn">
+                            <span class="btn-content">
+                                <span class="btn-icon">🗑️</span>
+                                <span class="btn-text">Limpiar</span>
+                            </span>
+                            <div class="btn-shine"></div>
+                        </button>
+                    </div>
+                    
+                    <div class="progress-section" id="progressSection">
+                        <div class="progress-wrapper">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressFill"></div>
+                                <div class="progress-glow"></div>
+                            </div>
+                            <div class="progress-text" id="progressText">Preparando...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card metrics-section">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="icon-wrapper">📊</span>
+                        Métricas de Rendimiento
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-icon">⏱️</div>
+                            <div class="metric-content">
+                                <div class="metric-label">Tiempo Secuencial</div>
+                                <div class="metric-value" id="sequentialTime">--</div>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon">⚡</div>
+                            <div class="metric-content">
+                                <div class="metric-label">Tiempo Paralelo</div>
+                                <div class="metric-value" id="parallelTime">--</div>
+                            </div>
+                        </div>
+                        <div class="metric-card highlight">
+                            <div class="metric-icon">🚀</div>
+                            <div class="metric-content">
+                                <div class="metric-label">Speedup</div>
+                                <div class="metric-value" id="speedup">--</div>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon">📈</div>
+                            <div class="metric-content">
+                                <div class="metric-label">Eficiencia</div>
+                                <div class="metric-value" id="efficiency">--</div>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon">📝</div>
+                            <div class="metric-content">
+                                <div class="metric-label">Palabras/seg</div>
+                                <div class="metric-value" id="wordsPerSec">--</div>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon">📄</div>
+                            <div class="metric-content">
+                                <div class="metric-label">Archivos</div>
+                                <div class="metric-value" id="filesProcessed">0/0</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="summary-stats">
+                        <div class="stat-item">
+                            <span class="stat-number" id="uniqueWords">0</span>
+                            <span class="stat-label">Palabras únicas</span>
+                        </div>
+                        <div class="stat-divider"></div>
+                        <div class="stat-item">
+                            <span class="stat-number" id="totalWords">0</span>
+                            <span class="stat-label">Palabras totales</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+ 
+            <div class="glass-card prediction-section">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="icon-wrapper">🔮</span>
+                        Predicción de Texto
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="text-input-wrapper">
+                        <textarea 
+                            id="textInput" 
+                            class="text-input" 
+                            placeholder="Comienza a escribir y observa las sugerencias mágicas..."
+                            rows="4"></textarea>
+                        <div class="input-glow"></div>
+                    </div>
+                    
+                    <div class="suggestions-container" id="suggestionsContainer">
+                        <div class="suggestions-header">
+                            <span class="suggestions-title">💡 Sugerencias</span>
+                            <div class="typing-indicator">
+                                <div class="dot"></div>
+                                <div class="dot"></div>
+                                <div class="dot"></div>
+                            </div>
+                        </div>
+                        <div class="suggestions-grid" id="suggestionsGrid">
+                           
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+          
+            <div class="glass-card sources-section">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="icon-wrapper">📚</span>
+                        Fuentes de Datos
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="sources-list" id="sourcesList">
+                        <div class="empty-state">
+                            <div class="empty-icon">📖</div>
+                            <p>Los archivos procesados aparecerán aquí</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+@section Scripts {
+    <script src="~/js/text-prediction.js" asp-append-version="true"></script>
+}
