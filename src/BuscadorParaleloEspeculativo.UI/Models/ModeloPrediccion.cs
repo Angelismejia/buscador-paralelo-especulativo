@@ -1,7 +1,14 @@
+<<<<<<< Updated upstream:src/BuscadorParaleloEspeculativo.UI/Models/ModeloPrediccion.cs
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+=======
 using BuscadorParaleloEspeculativo.UI.Models;
+using System;
+>>>>>>> Stashed changes:buscador-paralelo-especulativo-main/src/BuscadorParaleloEspeculativo.UI/Models/ModeloPrediccion.cs
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Text;
+
 
 public class ModeloPrediccion
 {
@@ -283,10 +290,14 @@ public class ModeloPrediccion
         if (string.IsNullOrWhiteSpace(palabra))
             return "";
 
-        // Convertir a minúsculas y eliminar todos los signos de puntuación
-        return palabra
-            .ToLower()
-            .Trim()
+        // Primero paso todo a minúsculas
+        palabra = palabra.ToLower().Trim();
+
+        // Quito acentos
+        palabra = QuitarAcentos(palabra);
+
+        // Quito signos de puntuación
+        palabra = palabra
             .Replace(".", "")
             .Replace(",", "")
             .Replace(";", "")
@@ -303,18 +314,39 @@ public class ModeloPrediccion
             .Replace("«", "")
             .Replace("»", "")
             .Replace("'", "")
-            .Replace("'", "")
             .Replace("—", "")
             .Replace("–", "")
             .Replace("\t", "")
             .Replace("\n", "")
             .Replace("\r", "");
+
+        return palabra;
     }
 
-    /// <summary>
-    /// Verifica si una palabra es válida para incluir en el modelo
-    /// </summary>
-    private bool EsPalabraValida(string palabra)
+    private string QuitarAcentos(string texto)
+    {
+        if (string.IsNullOrEmpty(texto))
+            return texto;
+            
+        var normalized = texto.Normalize(NormalizationForm.FormD);
+        var sb = new StringBuilder();
+
+        foreach (var c in normalized)
+        {
+            var unicodeCategory = CharUnicodeInfo.GetUnicodeCategory(c);
+            if (unicodeCategory != UnicodeCategory.NonSpacingMark)
+            {
+                sb.Append(c);
+            }
+        }
+
+        return sb.ToString().Normalize(NormalizationForm.FormC);
+    }
+
+/// <summary>
+/// Verifica si una palabra es válida para incluir en el modelo
+/// </summary>
+private bool EsPalabraValida(string palabra)
     {
         // Filtros básicos de validación
         if (string.IsNullOrWhiteSpace(palabra)) return false;
