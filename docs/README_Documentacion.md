@@ -1,5 +1,8 @@
 Documento Principal (5ptos)
 
+<img width="1199" height="580" alt="Captura de pantalla 2025-08-19 110711" src="https://github.com/user-attachments/assets/10dc2be1-ee89-46f8-aa5a-9ec6d1eb049c" />
+
+
 Portada
 •	Nombre del curso
 •	Título del proyecto
@@ -114,6 +117,7 @@ Paso 2: Monitorear Rendimiento
 
 
 <img width="1199" height="580" alt="image" src="https://github.com/user-attachments/assets/74c9044e-1687-4864-839d-02aeccc24337" />
+
 
 
 
