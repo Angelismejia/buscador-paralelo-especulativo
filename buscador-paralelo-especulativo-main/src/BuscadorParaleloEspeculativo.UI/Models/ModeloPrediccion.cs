@@ -170,7 +170,7 @@ public class ModeloPrediccion
         Console.WriteLine($"[ModeloPrediccion] Palabras procesadas: [{string.Join(", ", palabrasContexto)}]");
 
         // Variables para almacenar los candidatos encontrados
-        Dictionary<string, HashSet<string>> candidatos = null;
+        Dictionary<string, HashSet<string>>? candidatos = null;
         string metodoUsado = "";
 
         // PRIORIDAD 1: Buscar TRIGRAMAS (más específico y preciso)
