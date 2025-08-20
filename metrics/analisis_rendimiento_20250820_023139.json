@@ -1,0 +1,123 @@
+﻿{
+  "archivosTotal": 2,
+  "archivosProcesados": 2,
+  "palabrasUnicas": 486,
+  "palabrasTotal": 1113,
+  "tiempoSecuencialMs": 869,
+  "tiempoParaleloMs": 137,
+  "tiempoSecuencialSeg": 0.869,
+  "tiempoParaleloSeg": 0.137,
+  "speedup": 6.343065693430657,
+  "eficiencia": 1.5857664233576643,
+  "palabrasSecuencialPorSeg": 1280.78250863061,
+  "palabrasParaleloPorSeg": 8124.087591240876,
+  "evaluacionSpeedup": "Excelente",
+  "estadoArchivos": [
+    {
+      "nombreArchivo": "Entregable_PlanDeNegocio.pdf",
+      "rutaCompleta": "C:\\Users\\angel\\AppData\\Local\\Temp\\BuscadorParalelo\\c4e0c91f-db1d-4c2f-a5fb-0d5d6d6dc2b7\\Entregable_PlanDeNegocio.pdf",
+      "estado": "Procesado",
+      "palabrasProcesadas": 511,
+      "tama\u00F1oBytes": 274616,
+      "tama\u00F1oLegible": "268.2 KB"
+    },
+    {
+      "nombreArchivo": "Constituci\u00F3n de empresas_Candy.pdf",
+      "rutaCompleta": "C:\\Users\\angel\\AppData\\Local\\Temp\\BuscadorParalelo\\c4e0c91f-db1d-4c2f-a5fb-0d5d6d6dc2b7\\Constituci\u00F3n de empresas_Candy.pdf",
+      "estado": "Procesado",
+      "palabrasProcesadas": 602,
+      "tama\u00F1oBytes": 226323,
+      "tama\u00F1oLegible": "221.0 KB"
+    }
+  ],
+  "analisisProcesadores": {
+    "processorsDisponibles": 4,
+    "processorsRecomendados": 3,
+    "processorsOptimos": 4,
+    "tipoProcesador": "Desktop Standard",
+    "recomendacionHardware": "Adecuado para paralelismo",
+    "cargaCPU": 0,
+    "justificacionRecomendacion": "Para I/O \u002B CPU intensivo, usar 3 de 4 cores evita contenci\u00F3n."
+  },
+  "metricasEspecificas": {
+    "archivosPromedioSegundo": 14.5985401459854,
+    "eficienciaMemoria": 43.66576819407008,
+    "throughputPalabras": 8124.087591240876,
+    "picosMaximosParalelismo": 10,
+    "tiempoRespuestaPromedio": 68.5,
+    "latenciaInicial": 13.700000000000001,
+    "rendimientoGeneral": "Excelente"
+  },
+  "resultadosPruebas": [
+    {
+      "numeroProcessors": 1,
+      "nombrePrueba": "Paralelo-1cores",
+      "tiempoMs": 765,
+      "speedup": 1.1359477124183006,
+      "eficiencia": 1.1359477124183006,
+      "archivosTotal": 2,
+      "parametrosPrueba": "MaxDegreeOfParallelism=1",
+      "fechaPrueba": "2025-08-20T02:31:38.6053186-04:00",
+      "memoriaUtilizada": -16888808
+    },
+    {
+      "numeroProcessors": 2,
+      "nombrePrueba": "Paralelo-2cores",
+      "tiempoMs": 140,
+      "speedup": 6.207142857142857,
+      "eficiencia": 3.1035714285714286,
+      "archivosTotal": 2,
+      "parametrosPrueba": "MaxDegreeOfParallelism=2",
+      "fechaPrueba": "2025-08-20T02:31:38.7480312-04:00",
+      "memoriaUtilizada": 16607872
+    },
+    {
+      "numeroProcessors": 4,
+      "nombrePrueba": "Paralelo-4cores",
+      "tiempoMs": 161,
+      "speedup": 5.39751552795031,
+      "eficiencia": 1.3493788819875776,
+      "archivosTotal": 2,
+      "parametrosPrueba": "MaxDegreeOfParallelism=4",
+      "fechaPrueba": "2025-08-20T02:31:38.9099472-04:00",
+      "memoriaUtilizada": -276496
+    },
+    {
+      "numeroProcessors": 6,
+      "nombrePrueba": "Paralelo-6cores",
+      "tiempoMs": 160,
+      "speedup": 5.43125,
+      "eficiencia": 0.9052083333333334,
+      "archivosTotal": 2,
+      "parametrosPrueba": "MaxDegreeOfParallelism=6",
+      "fechaPrueba": "2025-08-20T02:31:39.0714824-04:00",
+      "memoriaUtilizada": -22896792
+    },
+    {
+      "numeroProcessors": 8,
+      "nombrePrueba": "Paralelo-8cores",
+      "tiempoMs": 124,
+      "speedup": 7.008064516129032,
+      "eficiencia": 0.876008064516129,
+      "archivosTotal": 2,
+      "parametrosPrueba": "MaxDegreeOfParallelism=8",
+      "fechaPrueba": "2025-08-20T02:31:39.1969631-04:00",
+      "memoriaUtilizada": 47578096
+    },
+    {
+      "numeroProcessors": 10,
+      "nombrePrueba": "Paralelo-10cores",
+      "tiempoMs": 176,
+      "speedup": 4.9375,
+      "eficiencia": 0.49375,
+      "archivosTotal": 2,
+      "parametrosPrueba": "MaxDegreeOfParallelism=10",
+      "fechaPrueba": "2025-08-20T02:31:39.3747205-04:00",
+      "memoriaUtilizada": -32357008
+    }
+  ],
+  "fechaAnalisis": "2025-08-20T02:31:36.9608464-04:00",
+  "versionSistema": "Microsoft Windows NT 10.0.22631.0",
+  "memoriaTotal": 79108232,
+  "configuracionOptima": "8 cores (Speedup: 7.01x)"
+}
