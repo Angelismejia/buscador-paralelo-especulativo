@@ -1,5 +1,5 @@
-﻿@page
-@model IndexModele
+@page
+@model IndexModel
 @{
     ViewData["Title"] = "Sistema de Predicción de Texto Especulativo";
 }
@@ -31,7 +31,6 @@
                     </h2>
                 </div>
                 <div class="card-body">
-                    @Html.AntiForgeryToken()
                     <div class="upload-zone" id="uploadZone">
                         <div class="upload-visual">
                             <div class="upload-icon">🛗</div>
@@ -50,9 +49,9 @@
                         </div>
                         <input type="file" id="fileInput" class="file-input" multiple accept=".txt,.docx,.pdf">
                     </div>
-
+                    
                     <div class="file-list" id="fileList"></div>
-
+                    
                     <div class="action-buttons">
                         <button class="neo-btn primary" id="processBtn" disabled>
                             <span class="btn-content">
@@ -68,10 +67,8 @@
                             </span>
                             <div class="btn-shine"></div>
                         </button>
-
-                        
                     </div>
-
+                    
                     <div class="progress-section" id="progressSection">
                         <div class="progress-wrapper">
                             <div class="progress-bar">
@@ -136,7 +133,7 @@
                             </div>
                         </div>
                     </div>
-
+                    
                     <div class="summary-stats">
                         <div class="stat-item">
                             <span class="stat-number" id="uniqueWords">0</span>
@@ -151,7 +148,7 @@
                 </div>
             </div>
 
-
+ 
             <div class="glass-card prediction-section">
                 <div class="card-header">
                     <h2 class="card-title">
@@ -161,13 +158,14 @@
                 </div>
                 <div class="card-body">
                     <div class="text-input-wrapper">
-                        <textarea id="textInput"
-                                  class="text-input"
-                                  placeholder="Comienza a escribir y observa las sugerencias mágicas..."
-                                  rows="4"></textarea>
+                        <textarea 
+                            id="textInput" 
+                            class="text-input" 
+                            placeholder="Comienza a escribir y observa las sugerencias mágicas..."
+                            rows="4"></textarea>
                         <div class="input-glow"></div>
                     </div>
-
+                    
                     <div class="suggestions-container" id="suggestionsContainer">
                         <div class="suggestions-header">
                             <span class="suggestions-title">💡 Sugerencias</span>
@@ -178,12 +176,13 @@
                             </div>
                         </div>
                         <div class="suggestions-grid" id="suggestionsGrid">
+                           
                         </div>
                     </div>
                 </div>
             </div>
 
-
+          
             <div class="glass-card sources-section">
                 <div class="card-header">
                     <h2 class="card-title">
@@ -206,488 +205,4 @@
 
 @section Scripts {
     <script src="~/js/text-prediction.js" asp-append-version="true"></script>
-<<<<<<< Updated upstream
 }
-=======
-    <script>
-        let pruebasEnEjecucion = false;
-
-        async function ejecutarPruebas() {
-            if (pruebasEnEjecucion) {
-                textPredictionSystem?.showNotification('Las pruebas ya están en ejecución...', 'info');
-                return;
-            }
-
-            const testBtn = document.getElementById('testBtn');
-            const btnText = testBtn?.querySelector('.btn-text');
-            const btnIcon = testBtn?.querySelector('.btn-icon');
-
-            try {
-                pruebasEnEjecucion = true;
-
-                // Actualizar UI del botón
-                if (testBtn) testBtn.disabled = true;
-                if (btnText) btnText.textContent = 'Ejecutando...';
-                if (btnIcon) btnIcon.textContent = '⏳';
-
-                // Mostrar notificación de inicio
-                textPredictionSystem?.showNotification('🧪 Iniciando batería completa de pruebas del sistema...', 'info');
-
-                // Mostrar progreso
-                mostrarProgresosPruebas();
-
-                console.log('[Pruebas] Iniciando batería de pruebas...');
-
-                // Llamada al backend
-                const response = await fetch('/Index?handler=EjecutarPruebas', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Error HTTP: ${response.status} - ${response.statusText}`);
-                }
-
-                const resultado = await response.json();
-                console.log('[Pruebas] Resultados recibidos:', resultado);
-
-                if (resultado.success) {
-                    mostrarResultadosPruebas(resultado);
-                    const mensaje = resultado.resumen.todosPasaron
-                        ? `✅ Todas las pruebas pasaron! Speedup promedio: ${resultado.resumen.speedupPromedio.toFixed(2)}x`
-                        : `⚠️ Algunas pruebas fallaron. ${resultado.resumen.escenariosExitosos}/${resultado.resumen.totalEscenarios} exitosos`;
-
-                    textPredictionSystem?.showNotification(mensaje, resultado.resumen.todosPasaron ? 'success' : 'warning');
-                } else {
-                    throw new Error(resultado.message || 'Error ejecutando pruebas');
-                }
-
-            } catch (error) {
-                console.error('[Pruebas] Error:', error);
-                textPredictionSystem?.showNotification(`❌ Error ejecutando pruebas: ${error.message}`, 'error');
-                ocultarProgresosPruebas();
-            } finally {
-                pruebasEnEjecucion = false;
-
-                // Restaurar UI del botón
-                if (testBtn) testBtn.disabled = false;
-                if (btnText) btnText.textContent = 'Ejecutar Pruebas';
-                if (btnIcon) btnIcon.textContent = '🧪';
-
-                setTimeout(ocultarProgresosPruebas, 3000);
-            }
-        }
-
-        function mostrarProgresosPruebas() {
-            // Crear modal de progreso si no existe
-            let modalProgreso = document.getElementById('modal-progreso-pruebas');
-            if (!modalProgreso) {
-                modalProgreso = document.createElement('div');
-                modalProgreso.id = 'modal-progreso-pruebas';
-                modalProgreso.style.cssText = `
-                            position: fixed;
-                            top: 0;
-                            left: 0;
-                            width: 100%;
-                            height: 100%;
-                            background: rgba(0, 0, 0, 0.8);
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            z-index: 10000;
-                            backdrop-filter: blur(10px);
-                        `;
-
-                modalProgreso.innerHTML = `
-                            <div style="
-                                background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 123, 255, 0.1));
-                                border: 1px solid rgba(0, 255, 136, 0.3);
-                                border-radius: 16px;
-                                padding: 40px;
-                                text-align: center;
-                                max-width: 500px;
-                                width: 90%;
-                                backdrop-filter: blur(20px);
-                                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-                            ">
-                                <div style="font-size: 3em; margin-bottom: 20px;">🧪</div>
-                                <h2 style="color: #00ff88; margin-bottom: 16px;">Ejecutando Pruebas del Sistema</h2>
-                                <div style="color: rgba(255, 255, 255, 0.8); margin-bottom: 24px;">
-                                    <p>Analizando rendimiento con diferentes configuraciones...</p>
-                                    <small>Este proceso puede tomar 30-60 segundos</small>
-                                </div>
-
-                                <div style="margin: 20px 0;">
-                                    <div style="
-                                        width: 100%;
-                                        height: 6px;
-                                        background: rgba(255, 255, 255, 0.2);
-                                        border-radius: 3px;
-                                        overflow: hidden;
-                                        position: relative;
-                                    ">
-                                        <div style="
-                                            position: absolute;
-                                            top: 0;
-                                            left: -100%;
-                                            width: 100%;
-                                            height: 100%;
-                                            background: linear-gradient(90deg, transparent, #00ff88, transparent);
-                                            animation: progress-sweep 2s linear infinite;
-                                        "></div>
-                                    </div>
-                                </div>
-
-                                <div id="progreso-pasos" style="color: rgba(255, 255, 255, 0.7); font-size: 0.9em;">
-                                    <div>📊 Preparando escenarios de prueba...</div>
-                                </div>
-                            </div>
-                        `;
-
-                document.body.appendChild(modalProgreso);
-
-                // Agregar estilos de animación
-                if (!document.getElementById('progress-styles')) {
-                    const styles = document.createElement('style');
-                    styles.id = 'progress-styles';
-                    styles.textContent = `
-                        @@keyframes progress-sweep {
-                            0% { left: -100%; }
-                            100% { left: 100%; }
-                        }
-                    `;
-                    document.head.appendChild(styles);
-                }
-            }
-
-            modalProgreso.style.display = 'flex';
-
-            // Simular pasos de progreso
-            const pasos = [
-                '📁 Creando archivos de test...',
-                '⚡ Ejecutando pruebas secuenciales...',
-                '🚀 Ejecutando pruebas paralelas...',
-                '📊 Analizando escalabilidad...',
-                '🔄 Validando consistencia...',
-                '🧠 Verificando modelo predictivo...',
-                '📈 Generando reporte final...'
-            ];
-
-            let pasoActual = 0;
-            const intervalo = setInterval(() => {
-                const progresoPasos = document.getElementById('progreso-pasos');
-                if (progresoPasos && pasoActual < pasos.length) {
-                    progresoPasos.innerHTML = `<div>${pasos[pasoActual]}</div>`;
-                    pasoActual++;
-                } else {
-                    clearInterval(intervalo);
-                }
-            }, 8000); // Cambiar paso cada 8 segundos
-
-            // Limpiar intervalo cuando se cierre el modal
-            modalProgreso.dataset.intervalo = intervalo;
-        }
-
-        function ocultarProgresosPruebas() {
-            const modalProgreso = document.getElementById('modal-progreso-pruebas');
-            if (modalProgreso) {
-                // Limpiar intervalo si existe
-                if (modalProgreso.dataset.intervalo) {
-                    clearInterval(parseInt(modalProgreso.dataset.intervalo));
-                }
-
-                modalProgreso.style.display = 'none';
-            }
-        }
-
-        function mostrarResultadosPruebas(resultados) {
-            // Crear modal de resultados
-            let modalResultados = document.getElementById('modal-resultados-pruebas');
-            if (modalResultados) {
-                modalResultados.remove();
-            }
-
-            modalResultados = document.createElement('div');
-            modalResultados.id = 'modal-resultados-pruebas';
-            modalResultados.style.cssText = `
-                        position: fixed;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                        background: rgba(0, 0, 0, 0.9);
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        z-index: 10001;
-                        backdrop-filter: blur(10px);
-                        overflow-y: auto;
-                        padding: 20px;
-                        box-sizing: border-box;
-                    `;
-
-            const todosPasaron = resultados.resumen.todosPasaron;
-            const iconoResultado = todosPasaron ? '✅' : '⚠️';
-            const colorResultado = todosPasaron ? '#28a745' : '#ffc107';
-
-            modalResultados.innerHTML = `
-                        <div style="
-                            background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(30, 30, 30, 0.9));
-                            border: 2px solid ${colorResultado};
-                            border-radius: 16px;
-                            padding: 30px;
-                            max-width: 900px;
-                            width: 100%;
-                            max-height: 90vh;
-                            overflow-y: auto;
-                            position: relative;
-                            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-                        ">
-                            <button onclick="cerrarResultadosPruebas()" style="
-                                position: absolute;
-                                top: 15px;
-                                right: 20px;
-                                background: none;
-                                border: none;
-                                color: white;
-                                font-size: 24px;
-                                cursor: pointer;
-                                opacity: 0.7;
-                                transition: opacity 0.3s;
-                            " onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">×</button>
-
-                            <div style="text-align: center; margin-bottom: 30px;">
-                                <div style="font-size: 4em; margin-bottom: 10px;">${iconoResultado}</div>
-                                <h1 style="color: ${colorResultado}; margin: 0 0 10px 0;">Resultados de Pruebas</h1>
-                                <p style="color: rgba(255, 255, 255, 0.8); margin: 0;">
-                                    ${resultados.resumen.escenariosExitosos}/${resultados.resumen.totalEscenarios} escenarios exitosos
-                                    ${resultados.resumen.speedupPromedio > 0 ? `• Speedup promedio: ${resultados.resumen.speedupPromedio.toFixed(2)}x` : ''}
-                                </p>
-                            </div>
-
-                            ${generarSeccionEscenarios(resultados.escenarios)}
-                            ${resultados.escalabilidad ? generarSeccionEscalabilidad(resultados.escalabilidad) : ''}
-                            ${resultados.consistencia ? generarSeccionConsistencia(resultados.consistencia) : ''}
-                            ${resultados.modeloPredictivo ? generarSeccionModelo(resultados.modeloPredictivo) : ''}
-                            ${resultados.recomendaciones ? generarSeccionRecomendaciones(resultados.recomendaciones) : ''}
-
-                            <div style="text-align: center; margin-top: 30px;">
-                                <button onclick="cerrarResultadosPruebas()" style="
-                                    background: linear-gradient(45deg, ${colorResultado}, ${colorResultado}dd);
-                                    border: none;
-                                    color: white;
-                                    padding: 12px 30px;
-                                    border-radius: 25px;
-                                    font-weight: bold;
-                                    cursor: pointer;
-                                    font-size: 16px;
-                                    transition: transform 0.3s ease;
-                                " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                                    Cerrar Resultados
-                                </button>
-                            </div>
-                        </div>
-                    `;
-
-            document.body.appendChild(modalResultados);
-        }
-
-        function generarSeccionEscenarios(escenarios) {
-            if (!escenarios || escenarios.length === 0) return '';
-
-            const escenariosHTML = escenarios.map(e => `
-                        <div style="
-                            background: rgba(255, 255, 255, 0.05);
-                            border: 1px solid rgba(255, 255, 255, 0.1);
-                            border-radius: 8px;
-                            padding: 16px;
-                            margin-bottom: 12px;
-                            ${!e.exitoso ? 'border-color: rgba(220, 53, 69, 0.5);' : ''}
-                        ">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                                <h4 style="margin: 0; color: ${e.exitoso ? '#00ff88' : '#dc3545'};">
-                                    ${e.exitoso ? '✅' : '❌'} ${e.nombre}
-                                </h4>
-                                <span style="color: rgba(255, 255, 255, 0.7); font-size: 0.9em;">
-                                    ${e.archivos} archivos
-                                </span>
-                            </div>
-                            ${e.exitoso ? `
-                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; font-size: 0.9em;">
-                                    <div><strong>Speedup:</strong> ${e.speedup.toFixed(2)}x</div>
-                                    <div><strong>Eficiencia:</strong> ${e.eficiencia.toFixed(1)}%</div>
-                                    <div><strong>Tiempo:</strong> ${e.tiempoMs}ms</div>
-                                    <div><strong>Throughput:</strong> ${e.throughputArchivos} arch/s</div>
-                                </div>
-                                <div style="margin-top: 8px; font-size: 0.85em; color: rgba(255, 255, 255, 0.6);">
-                                    Tamaño promedio: ${e.tamañoPromedio}
-                                </div>
-                            ` : `
-                                <div style="color: #dc3545; font-size: 0.9em;">
-                                    Error: ${e.error || 'Error desconocido'}
-                                </div>
-                            `}
-                        </div>
-                    `).join('');
-
-            return `
-                        <div style="margin-bottom: 30px;">
-                            <h3 style="color: #00ff88; margin-bottom: 16px; border-bottom: 1px solid rgba(0, 255, 136, 0.3); padding-bottom: 8px;">
-                                📊 Escenarios de Prueba
-                            </h3>
-                            ${escenariosHTML}
-                        </div>
-                    `;
-        }
-
-        function generarSeccionEscalabilidad(escalabilidad) {
-            const resultadosHTML = Object.entries(escalabilidad.resultadosPorCores)
-                .sort(([a], [b]) => parseInt(a) - parseInt(b))
-                .map(([cores, resultado]) => {
-                    const isOptimo = parseInt(cores) === escalabilidad.configuracionOptima;
-                    return `
-                                <div style="
-                                    display: grid;
-                                    grid-template-columns: 60px 1fr 80px 80px;
-                                    gap: 12px;
-                                    align-items: center;
-                                    padding: 8px;
-                                    background: ${isOptimo ? 'rgba(0, 255, 136, 0.1)' : 'transparent'};
-                                    border-radius: 4px;
-                                    border: ${isOptimo ? '1px solid rgba(0, 255, 136, 0.3)' : '1px solid transparent'};
-                                ">
-                                    <div style="text-align: center; font-weight: bold;">
-                                        ${cores} ${isOptimo ? '🎯' : ''}
-                                    </div>
-                                    <div style="background: rgba(255, 255, 255, 0.1); height: 20px; border-radius: 10px; position: relative; overflow: hidden;">
-                                        <div style="
-                                            background: linear-gradient(90deg, #00ff88, #0088ff);
-                                            height: 100%;
-                                            width: ${Math.min(100, (resultado.speedup / escalabilidad.mejorSpeedup) * 100)}%;
-                                            border-radius: 10px;
-                                        "></div>
-                                        <span style="
-                                            position: absolute;
-                                            top: 50%;
-                                            left: 50%;
-                                            transform: translate(-50%, -50%);
-                                            font-size: 0.8em;
-                                            font-weight: bold;
-                                            color: white;
-                                            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-                                        ">${resultado.speedup}x</span>
-                                    </div>
-                                    <div style="text-align: center;">${resultado.eficiencia.toFixed(1)}%</div>
-                                    <div style="text-align: center;">${resultado.tiempoMs}ms</div>
-                                </div>
-                            `;
-                }).join('');
-
-            return `
-                        <div style="margin-bottom: 30px;">
-                            <h3 style="color: #00ff88; margin-bottom: 16px; border-bottom: 1px solid rgba(0, 255, 136, 0.3); padding-bottom: 8px;">
-                                📈 Escalabilidad
-                            </h3>
-                            <div style="
-                                display: grid;
-                                grid-template-columns: 60px 1fr 80px 80px;
-                                gap: 12px;
-                                font-size: 0.8em;
-                                color: rgba(255, 255, 255, 0.7);
-                                padding: 0 8px 8px 8px;
-                                border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-                                margin-bottom: 8px;
-                            ">
-                                <div style="text-align: center;">Cores</div>
-                                <div style="text-align: center;">Speedup</div>
-                                <div style="text-align: center;">Eficiencia</div>
-                                <div style="text-align: center;">Tiempo</div>
-                            </div>
-                            ${resultadosHTML}
-                        </div>
-                    `;
-        }
-
-        function generarSeccionConsistencia(consistencia) {
-            if (!consistencia) return '';
-            return `
-                        <div style="margin-bottom: 30px;">
-                            <h3 style="color: #00ff88; margin-bottom: 16px; border-bottom: 1px solid rgba(0, 255, 136, 0.3); padding-bottom: 8px;">
-                                🔄 Consistencia
-                            </h3>
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
-                                <div style="background: rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 8px;">
-                                    <div style="font-size: 0.9em; color: rgba(255, 255, 255, 0.7); margin-bottom: 8px;">Estado</div>
-                                    <div style="font-size: 1.2em; font-weight: bold; color: ${consistencia.consistente ? '#28a745' : '#ffc107'};">
-                                        ${consistencia.consistente ? '✅ BUENA' : '⚠️ VARIABLE'}
-                                    </div>
-                                </div>
-                                <div style="background: rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 8px;">
-                                    <div style="font-size: 0.9em; color: rgba(255, 255, 255, 0.7); margin-bottom: 8px;">Speedup Promedio</div>
-                                    <div style="font-size: 1.2em; font-weight: bold;">${consistencia.speedupPromedio}x ± ${consistencia.speedupVariacion}</div>
-                                </div>
-                                <div style="background: rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 8px;">
-                                    <div style="font-size: 0.9em; color: rgba(255, 255, 255, 0.7); margin-bottom: 8px;">Tiempo Promedio</div>
-                                    <div style="font-size: 1.2em; font-weight: bold;">${consistencia.tiempoPromedio}ms ± ${consistencia.tiempoVariacion}</div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-        }
-
-        function generarSeccionModelo(modelo) {
-            if (!modelo) return '';
-            return `
-                        <div style="margin-bottom: 30px;">
-                            <h3 style="color: #00ff88; margin-bottom: 16px; border-bottom: 1px solid rgba(0, 255, 136, 0.3); padding-bottom: 8px;">
-                                🧠 Modelo Predictivo
-                            </h3>
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
-                                <div style="background: rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 8px;">
-                                    <div style="font-size: 0.9em; color: rgba(255, 255, 255, 0.7); margin-bottom: 8px;">Estado</div>
-                                    <div style="font-size: 1.2em; font-weight: bold; color: ${modelo.entrenado ? '#28a745' : '#dc3545'};">
-                                        ${modelo.entrenado ? '✅ ENTRENADO' : '❌ ERROR'}
-                                    </div>
-                                </div>
-                                <div style="background: rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 8px;">
-                                    <div style="font-size: 0.9em; color: rgba(255, 255, 255, 0.7); margin-bottom: 8px;">N-gramas</div>
-                                    <div style="font-size: 1.2em; font-weight: bold;">${(modelo.bigramas + modelo.trigramas).toLocaleString()}</div>
-                                </div>
-                                <div style="background: rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 8px;">
-                                    <div style="font-size: 0.9em; color: rgba(255, 255, 255, 0.7); margin-bottom: 8px;">Éxito Predicción</div>
-                                    <div style="font-size: 1.2em; font-weight: bold;">${modelo.exitoPrediccion}%</div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-        }
-
-        function generarSeccionRecomendaciones(recomendaciones) {
-            if (!recomendaciones || !recomendaciones.recomendaciones || recomendaciones.recomendaciones.length === 0) return '';
-            const recomendacionesHTML = recomendaciones.recomendaciones.map(r => `
-                        <li style="margin-bottom: 10px; line-height: 1.5;">${r}</li>
-                    `).join('');
-            return `
-                        <div>
-                            <h3 style="color: #00ff88; margin-bottom: 16px; border-bottom: 1px solid rgba(0, 255, 136, 0.3); padding-bottom: 8px;">
-                                💡 Recomendaciones
-                            </h3>
-                            <ul style="padding-left: 20px; margin: 0; color: rgba(255, 255, 255, 0.9);">
-                                ${recomendacionesHTML}
-                            </ul>
-                        </div>
-                    `;
-        }
-
-        function cerrarResultadosPruebas() {
-            const modalResultados = document.getElementById('modal-resultados-pruebas');
-            if (modalResultados) {
-                modalResultados.remove();
-            }
-        }
-    </script>
-}
->>>>>>> Stashed changes
