@@ -1,0 +1,99 @@
+﻿{
+  "archivosTotal": 3,
+  "archivosProcesados": 3,
+  "palabrasUnicas": 152,
+  "palabrasTotal": 8121,
+  "tiempoSecuencialMs": 38,
+  "tiempoParaleloMs": 546,
+  "tiempoSecuencialSeg": 0.038,
+  "tiempoParaleloSeg": 0.546,
+  "speedup": 0.0695970695970696,
+  "eficiencia": 0.0173992673992674,
+  "palabrasSecuencialPorSeg": 213710.52631578947,
+  "palabrasParaleloPorSeg": 14873.626373626372,
+  "evaluacionSpeedup": "Pobre",
+  "estadoArchivos": [
+    {
+      "nombreArchivo": "mediano_1.txt",
+      "rutaCompleta": "C:\\Users\\angel\\AppData\\Local\\Temp\\TestParalelo\\dfdedd7a-82a8-4827-8b34-6d5cfba9199b\\mediano_1.txt",
+      "estado": "Procesado",
+      "palabrasProcesadas": 2125,
+      "tama\u00F1oBytes": 26611,
+      "tama\u00F1oLegible": "26.0 KB"
+    },
+    {
+      "nombreArchivo": "mediano_2.txt",
+      "rutaCompleta": "C:\\Users\\angel\\AppData\\Local\\Temp\\TestParalelo\\dfdedd7a-82a8-4827-8b34-6d5cfba9199b\\mediano_2.txt",
+      "estado": "Procesado",
+      "palabrasProcesadas": 2707,
+      "tama\u00F1oBytes": 33871,
+      "tama\u00F1oLegible": "33.1 KB"
+    },
+    {
+      "nombreArchivo": "mediano_3.txt",
+      "rutaCompleta": "C:\\Users\\angel\\AppData\\Local\\Temp\\TestParalelo\\dfdedd7a-82a8-4827-8b34-6d5cfba9199b\\mediano_3.txt",
+      "estado": "Procesado",
+      "palabrasProcesadas": 3289,
+      "tama\u00F1oBytes": 41131,
+      "tama\u00F1oLegible": "40.2 KB"
+    }
+  ],
+  "analisisProcesadores": {
+    "processorsDisponibles": 4,
+    "processorsRecomendados": 3,
+    "processorsOptimos": 4,
+    "processorsMaximoPrueba": 8,
+    "tipoProcesador": "Desktop Standard",
+    "recomendacionHardware": "Adecuado para paralelismo",
+    "cargaCPU": 0,
+    "justificacionRecomendacion": "Para I/O \u002B CPU intensivo, usar 3 de 4 cores evita contenci\u00F3n. Configuraci\u00F3n m\u00E1xima de prueba: 8 cores para evaluar sobresuscripci\u00F3n."
+  },
+  "metricasEspecificas": {
+    "archivosPromedioSegundo": 5.4945054945054945,
+    "eficienciaMemoria": 1.8716906784878709,
+    "throughputPalabras": 14873.626373626372,
+    "picosMaximosParalelismo": 4,
+    "tiempoRespuestaPromedio": 182,
+    "latenciaInicial": 54.6,
+    "rendimientoGeneral": "Mejorable"
+  },
+  "resultadosPruebas": [
+    {
+      "numeroProcessors": 1,
+      "nombrePrueba": "Paralelo-1cores",
+      "tiempoMs": 227,
+      "speedup": 0.16740088105726872,
+      "eficiencia": 0.16740088105726872,
+      "archivosTotal": 3,
+      "parametrosPrueba": "MaxDegreeOfParallelism=1, MemoriaUsada=2,763,304bytes",
+      "fechaPrueba": "2025-08-19T19:09:47.5599177-04:00",
+      "memoriaUtilizada": 2763304
+    },
+    {
+      "numeroProcessors": 2,
+      "nombrePrueba": "Paralelo-2cores",
+      "tiempoMs": 222,
+      "speedup": 0.17117117117117117,
+      "eficiencia": 0.08558558558558559,
+      "archivosTotal": 3,
+      "parametrosPrueba": "MaxDegreeOfParallelism=2, MemoriaUsada=2,972,808bytes",
+      "fechaPrueba": "2025-08-19T19:09:47.785253-04:00",
+      "memoriaUtilizada": 2972808
+    },
+    {
+      "numeroProcessors": 4,
+      "nombrePrueba": "Paralelo-4cores",
+      "tiempoMs": 954,
+      "speedup": 0.039832285115303984,
+      "eficiencia": 0.009958071278825996,
+      "archivosTotal": 3,
+      "parametrosPrueba": "MaxDegreeOfParallelism=4, MemoriaUsada=2,830,912bytes",
+      "fechaPrueba": "2025-08-19T19:09:48.7611199-04:00",
+      "memoriaUtilizada": 2830912
+    }
+  ],
+  "fechaAnalisis": "2025-08-19T19:09:47.2933098-04:00",
+  "versionSistema": "Microsoft Windows NT 10.0.22631.0",
+  "memoriaTotal": 34987000,
+  "configuracionOptima": "2 cores (Speedup: 0.17x)"
+}

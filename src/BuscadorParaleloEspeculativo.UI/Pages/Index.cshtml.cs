@@ -26,9 +26,9 @@ namespace BuscadorParaleloEspeculativo.UI.Pages
             _logger.LogInformation("Sistema de Predicción de Texto Especulativo iniciado");
         }
 
-        
+
         /// Procesa los archivos subidos utilizando el procesamiento paralelo de CANDY 
-        
+
         public async Task<IActionResult> OnPostProcesarArchivosAsync()
         {
             try
@@ -36,9 +36,10 @@ namespace BuscadorParaleloEspeculativo.UI.Pages
                 //  verificación null más explícita
                 if (ArchivosSubidos == null || !ArchivosSubidos.Any())
                 {
-                    return new JsonResult(new { 
-                        success = false, 
-                        message = "No se han subido archivos para procesar" 
+                    return new JsonResult(new
+                    {
+                        success = false,
+                        message = "No se han subido archivos para procesar"
                     });
                 }
 
@@ -46,7 +47,7 @@ namespace BuscadorParaleloEspeculativo.UI.Pages
 
                 // Usar el método nuevo del ProcesadorArchivos
                 var metricas = await _procesadorArchivos.ProcesarArchivosSubidosAsync(
-                    ArchivosSubidos.ToArray(), 
+                    ArchivosSubidos.ToArray(),
                     Path.Combine(Path.GetTempPath(), "BuscadorParalelo", Guid.NewGuid().ToString())
                 );
 
@@ -65,7 +66,7 @@ namespace BuscadorParaleloEspeculativo.UI.Pages
                     tiempoParalelo = metricas.TiempoParaleloSeg,
                     speedup = Math.Round(metricas.Speedup, 2),
                     eficiencia = Math.Round(metricas.Eficiencia * 100, 1),
-                    palabrasSegSecuencial = (int)metricas.PalabrasSecuencialPorSeg, 
+                    palabrasSegSecuencial = (int)metricas.PalabrasSecuencialPorSeg,
                     palabrasSegParalelo = (int)metricas.PalabrasParaleloPorSeg,
                     palabrasUnicas = metricas.PalabrasUnicas,
                     palabrasTotales = metricas.PalabrasTotal,
@@ -87,9 +88,10 @@ namespace BuscadorParaleloEspeculativo.UI.Pages
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error durante el procesamiento de archivos");
-                return new JsonResult(new { 
-                    success = false, 
-                    message = $"Error durante el procesamiento: {ex.Message}" 
+                return new JsonResult(new
+                {
+                    success = false,
+                    message = $"Error durante el procesamiento: {ex.Message}"
                 });
             }
         }
@@ -103,21 +105,23 @@ namespace BuscadorParaleloEspeculativo.UI.Pages
             {
                 if (string.IsNullOrWhiteSpace(request?.Contexto))
                 {
-                    return new JsonResult(new { 
-                        success = false, 
-                        predicciones = new List<string>() 
+                    return new JsonResult(new
+                    {
+                        success = false,
+                        predicciones = new List<string>()
                     });
                 }
 
                 _logger.LogDebug($"Generando predicciones para contexto: '{request.Contexto}'");
 
                 var predicciones = _modeloPrediccion.PredecirSiguientePalabra(
-                    request.Contexto, 
+                    request.Contexto,
                     request.TopK ?? 8
                 );
 
-                return new JsonResult(new { 
-                    success = true, 
+                return new JsonResult(new
+                {
+                    success = true,
                     predicciones = predicciones,
                     contexto = request.Contexto
                 });
@@ -125,8 +129,9 @@ namespace BuscadorParaleloEspeculativo.UI.Pages
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error al generar predicciones para contexto: '{request?.Contexto}'");
-                return new JsonResult(new { 
-                    success = false, 
+                return new JsonResult(new
+                {
+                    success = false,
                     predicciones = new List<string>(),
                     error = ex.Message
                 });

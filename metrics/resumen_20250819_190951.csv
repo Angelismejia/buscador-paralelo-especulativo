@@ -1,0 +1,4 @@
+﻿Cores,TiempoMs,Speedup,Eficiencia,ArchivosTotal,PalabrasPorSegundo
+1,210,0.24,0.243,3,38671
+2,278,0.18,0.092,3,29212
+4,317,0.16,0.040,3,25618
