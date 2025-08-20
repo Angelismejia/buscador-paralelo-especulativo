@@ -8,13 +8,9 @@
 
   <ItemGroup>
     <Compile Remove="ho\**" />
-    <Compile Remove="NewFolder\**" />
     <Content Remove="ho\**" />
-    <Content Remove="NewFolder\**" />
     <EmbeddedResource Remove="ho\**" />
-    <EmbeddedResource Remove="NewFolder\**" />
     <None Remove="ho\**" />
-    <None Remove="NewFolder\**" />
   </ItemGroup>
 
   <ItemGroup>

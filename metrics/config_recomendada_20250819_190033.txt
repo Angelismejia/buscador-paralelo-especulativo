@@ -1,0 +1,18 @@
+﻿=== CONFIGURACIÓN RECOMENDADA ===
+Fecha del análisis: 2025-08-19 19:00:33
+Procesadores disponibles: 4
+Tipo de procesador: Desktop Standard
+
+=== MEJOR CONFIGURACIÓN ENCONTRADA ===
+Cores óptimos: 1
+Speedup obtenido: 0.21x
+Eficiencia: 21.1%
+Tiempo de procesamiento: 90ms
+
+=== MÉTRICAS DE RENDIMIENTO ===
+Archivos procesados: 3/3
+Palabras únicas encontradas: 152
+Palabras totales: 8,121
+Throughput paralelo: 82,867 palabras/seg
+Eficiencia de memoria: 1.9%
+Evaluación general: Pobre
