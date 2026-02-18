@@ -28,7 +28,7 @@ Desarrollado como **trabajo en equipo**, combina procesamiento paralelo, predicc
 
 ## Ejecución
 
-1. Clonar el repositorio y entrar en la carpeta UI:
+Clonar el repositorio y entrar en la carpeta UI:
 
 git clone https://github.com/Angelismejia/buscador-paralelo-especulativo.git
 cd buscador-paralelo-especulativo/src/BuscadorParaleloEspeculativo.UI
