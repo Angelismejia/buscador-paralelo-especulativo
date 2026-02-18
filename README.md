@@ -1,8 +1,8 @@
 # buscador-paralelo-especulativo
 
 Curso: Programación Paralela
+
 Equipo: CANDY ANGELIS (Líder del grupo), ANGEL, JASON, ISMER, INDI
-Entrega: 20 de Agosto, 2025
 
 # Descripcion 
 
