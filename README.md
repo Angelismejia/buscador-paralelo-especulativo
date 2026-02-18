@@ -29,18 +29,31 @@ HTML5, CSS3, JavaScript
 Git, GitHub, Microsoft Teams
 
 # Estructura
+
 buscador-paralelo-especulativo/
+
 ├── docs/       # Documentación
+
 ├── metrics/    # Métricas de rendimiento
+
 ├── src/
+
 │   └── BuscadorParaleloEspeculativo.UI/
+
 │       ├── wwwroot/css, js
+
 │       ├── Pages/Index.cshtml
+
 │       ├── Models/ProcesadorArchivos.cs, ModeloPrediccion.cs
+
 │       └── Controllers/
+
 ├── tests/
+
 ├── .gitignore
+
 └── README.md
+
 
 # Ejecución
 
