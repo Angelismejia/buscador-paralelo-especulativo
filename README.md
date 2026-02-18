@@ -28,16 +28,16 @@ Desarrollado como **trabajo en equipo**, combina procesamiento paralelo, predicc
 
 ## Ejecución
 
-Clonar el repositorio y entrar en la carpeta UI:
+**Clonar el repositorio y entrar en la carpeta UI:**
 
 git clone https://github.com/Angelismejia/buscador-paralelo-especulativo.git
 cd buscador-paralelo-especulativo/src/BuscadorParaleloEspeculativo.UI
 
 
-Restaurar dependencias y ejecutar:
+**Restaurar dependencias y ejecutar:**
 
 dotnet restore
 dotnet run
 
-Abrir el navegador en https://localhost:7XXX y probar con archivos TXT, DOCX o PDF.
+**Abrir el navegador en https://localhost:7XXX y probar con archivos TXT, DOCX o PDF.**
 
