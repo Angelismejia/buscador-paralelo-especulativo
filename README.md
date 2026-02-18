@@ -44,3 +44,6 @@ dotnet run
 
 **Abrir el navegador en https://localhost:7XXX y probar con archivos TXT, DOCX o PDF.**
 
+#Para más detalles, vea el README completo en la carpeta `docs/`.
+
+
