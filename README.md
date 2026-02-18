@@ -32,6 +32,8 @@ Clonar el repositorio y entrar en la carpeta UI:
 
 git clone https://github.com/Angelismejia/buscador-paralelo-especulativo.git
 cd buscador-paralelo-especulativo/src/BuscadorParaleloEspeculativo.UI
+
+
 Restaurar dependencias y ejecutar:
 
 dotnet restore
