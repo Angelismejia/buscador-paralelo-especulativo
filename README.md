@@ -1,6 +1,7 @@
 # buscador-paralelo-especulativo
 
 **Materia:** Programación Paralela  
+**Institución:** ITLA 
 **Equipo:** CANDY ANGELIS (Líder del grupo), ANGEL, JASON, ISMER, INDI  
 
 
