@@ -1,6 +1,6 @@
 # buscador-paralelo-especulativo
 
-**Curso:** Programación Paralela  
+**Materia:** Programación Paralela  
 **Equipo:** CANDY ANGELIS (Líder del grupo), ANGEL, JASON, ISMER, INDI  
 
 
