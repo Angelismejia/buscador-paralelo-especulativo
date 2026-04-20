@@ -15,6 +15,7 @@ namespace BuscadorParaleloEspeculativo.UI.Controllers
         private readonly ProcesadorArchivos _procesadorArchivos;        // Componente CANDY - procesamiento paralelo
         private readonly ModeloPrediccion _modeloPrediccion;            // Componente ANGEL - modelo de predicción
 
+        // Constructor con inyección de dependencias
         public ArchivosController(ILogger<ArchivosController> logger,
             ProcesadorArchivos procesadorArchivos,
             ModeloPrediccion modeloPrediccion)
