@@ -4,13 +4,16 @@ using System.ComponentModel.DataAnnotations;
 
 namespace BuscadorParaleloEspeculativo.UI.Controllers
 {
+    // Controlador API REST para manejo de archivos y procesamiento paralelo
+    // Define las rutas base como "api/archivos"
     [Route("api/[controller]")]
     [ApiController]
     public class ArchivosController : ControllerBase
     {
-        private readonly ILogger<ArchivosController> _logger;
-        private readonly ProcesadorArchivos _procesadorArchivos;
-        private readonly ModeloPrediccion _modeloPrediccion;
+        // Servicios inyectados para el funcionamiento del controlador
+        private readonly ILogger<ArchivosController> _logger;           // Sistema de logging para diagnóstico
+        private readonly ProcesadorArchivos _procesadorArchivos;        // Componente CANDY - procesamiento paralelo
+        private readonly ModeloPrediccion _modeloPrediccion;            // Componente ANGEL - modelo de predicción
 
         public ArchivosController(ILogger<ArchivosController> logger,
             ProcesadorArchivos procesadorArchivos,
@@ -21,11 +24,14 @@ namespace BuscadorParaleloEspeculativo.UI.Controllers
             _modeloPrediccion = modeloPrediccion;
         }
 
+        // Endpoint principal para procesar archivos subidos
+        // Recibe archivos mediante formulario multipart y los procesa de forma paralela
         [HttpPost("procesar")]
         public async Task<IActionResult> ProcesarArchivos([FromForm] List<IFormFile> files)
         {
             try
             {
+                // Validación inicial de entrada
                 if (files == null || !files.Any())
                 {
                     return BadRequest(new
@@ -35,71 +41,75 @@ namespace BuscadorParaleloEspeculativo.UI.Controllers
                     });
                 }
 
-                _logger.LogInformation($"[API] Procesando {files.Count} archivos");
+                _logger.LogInformation($"Iniciando procesamiento de {files.Count} archivos");
 
-                // Limpiar datos previos
+                // Preparación del sistema - limpiar datos de ejecuciones anteriores
                 _procesadorArchivos.LimpiarDatos();
                 _modeloPrediccion.LimpiarModelo();
 
-                // Crear carpeta temporal única
+                // Crear directorio temporal único para almacenar archivos durante el procesamiento
                 var carpetaTemporal = Path.Combine(Path.GetTempPath(), "BuscadorParalelo", Guid.NewGuid().ToString());
 
-                // Procesar archivos con CANDY
+                // FASE 1: Procesamiento paralelo de archivos usando componente CANDY
+                // Analiza los archivos de forma simultánea para extraer texto y generar métricas
                 var metricas = await _procesadorArchivos.ProcesarArchivosSubidosAsync(
                     files.ToArray(),
                     carpetaTemporal
                 );
 
-                // Entrenar modelo de predicción con ANGEL
+                // FASE 2: Entrenamiento del modelo de predicción usando componente ANGEL
+                // Obtiene contextos de palabras del procesamiento anterior
                 var contextos = _procesadorArchivos.ObtenerContextosPalabras();
                 if (contextos.Any())
                 {
-                    _logger.LogInformation($"[API] Entrenando modelo con {contextos.Count} contextos");
+                    _logger.LogInformation($"Iniciando entrenamiento del modelo con {contextos.Count} contextos de palabras");
+
+                    // Entrena el modelo con los contextos extraídos
                     _modeloPrediccion.EntrenarModelo(contextos);
 
                     var estadisticas = _modeloPrediccion.ObtenerEstadisticas();
-                    _logger.LogInformation($"[API] Modelo entrenado: {_modeloPrediccion.TotalBigramas} bigramas, {_modeloPrediccion.TotalTrigramas} trigramas");
+                    _logger.LogInformation($"Modelo entrenado exitosamente: {_modeloPrediccion.TotalBigramas} bigramas, {_modeloPrediccion.TotalTrigramas} trigramas");
                 }
 
-                // Preparar respuesta con métricas reales
+                // FASE 3: Preparar respuesta completa con todas las métricas
                 var respuesta = new
                 {
                     success = true,
                     message = "Archivos procesados exitosamente",
 
-                    // Métricas de rendimiento paralelo
-                    tiempoSecuencialSeg = Math.Round(metricas.TiempoSecuencialSeg, 2),
-                    tiempoParaleloSeg = Math.Round(metricas.TiempoParaleloSeg, 2),
-                    speedup = Math.Round(metricas.Speedup, 2),
-                    eficiencia = Math.Round(metricas.Eficiencia, 3),
-                    palabrasSecuencialPorSeg = (int)metricas.PalabrasSecuencialPorSeg,
-                    palabrasParaleloPorSeg = (int)metricas.PalabrasParaleloPorSeg,
-                    evaluacionSpeedup = metricas.EvaluacionSpeedup,
+                    // Métricas de rendimiento del procesamiento paralelo
+                    tiempoSecuencialSeg = Math.Round(metricas.TiempoSecuencialSeg, 2),      // Tiempo que tomaría procesamiento secuencial
+                    tiempoParaleloSeg = Math.Round(metricas.TiempoParaleloSeg, 2),          // Tiempo real del procesamiento paralelo
+                    speedup = Math.Round(metricas.Speedup, 2),                              // Factor de aceleración obtenido
+                    eficiencia = Math.Round(metricas.Eficiencia, 3),                       // Eficiencia del paralelismo (0-1)
+                    palabrasSecuencialPorSeg = (int)metricas.PalabrasSecuencialPorSeg,     // Throughput secuencial
+                    palabrasParaleloPorSeg = (int)metricas.PalabrasParaleloPorSeg,         // Throughput paralelo
+                    evaluacionSpeedup = metricas.EvaluacionSpeedup,                        // Evaluación cualitativa del speedup
 
-                    // Datos de procesamiento
-                    archivosTotal = metricas.ArchivosTotal,
-                    archivosProcesados = metricas.ArchivosProcesados,
-                    palabrasUnicas = metricas.PalabrasUnicas,
-                    palabrasTotal = metricas.PalabrasTotal,
+                    // Datos estadísticos del procesamiento
+                    archivosTotal = metricas.ArchivosTotal,           // Cantidad total de archivos procesados
+                    archivosProcesados = metricas.ArchivosProcesados, // Archivos procesados exitosamente
+                    palabrasUnicas = metricas.PalabrasUnicas,         // Vocabulario único extraído
+                    palabrasTotal = metricas.PalabrasTotal,           // Total de palabras procesadas
 
-                    // Estado de archivos individuales
+                    // Estado detallado de cada archivo individual
                     archivos = metricas.EstadoArchivos.Select(a => new {
-                        nombre = a.NombreArchivo,
-                        estado = a.Estado,
-                        palabras = a.PalabrasProcesadas,
-                        tamaño = a.TamañoLegible
+                        nombre = a.NombreArchivo,         // Nombre original del archivo
+                        estado = a.Estado,                // Estado de procesamiento (Procesado/Error)
+                        palabras = a.PalabrasProcesadas,  // Cantidad de palabras extraídas
+                        tamaño = a.TamañoLegible          // Tamaño en formato legible
                     }).ToList(),
 
-                    // Información del modelo entrenado
-                    modeloEntrenado = _modeloPrediccion.TotalBigramas > 0,
-                    bigramas = _modeloPrediccion.TotalBigramas,
-                    trigramas = _modeloPrediccion.TotalTrigramas,
-                    contextosEntrenamiento = _modeloPrediccion.TotalContextos
+                    // Información del modelo de predicción entrenado
+                    modeloEntrenado = _modeloPrediccion.TotalBigramas > 0,    // Indica si el modelo está listo
+                    bigramas = _modeloPrediccion.TotalBigramas,               // Cantidad de bigramas en el modelo
+                    trigramas = _modeloPrediccion.TotalTrigramas,             // Cantidad de trigramas en el modelo
+                    contextosEntrenamiento = _modeloPrediccion.TotalContextos // Contextos usados para entrenamiento
                 };
 
-                _logger.LogInformation($"[API] Procesamiento completado: Speedup {metricas.Speedup:F2}x, Modelo: {_modeloPrediccion.TotalBigramas} bigramas");
+                _logger.LogInformation($"Procesamiento completado - Speedup: {metricas.Speedup:F2}x, Modelo: {_modeloPrediccion.TotalBigramas} bigramas");
 
-                // Limpiar archivos temporales
+                // Limpieza de archivos temporales para liberar espacio
                 try
                 {
                     if (Directory.Exists(carpetaTemporal))
@@ -107,14 +117,16 @@ namespace BuscadorParaleloEspeculativo.UI.Controllers
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning($"[API] No se pudo limpiar carpeta temporal: {ex.Message}");
+                    // Error en limpieza no es crítico, solo se registra
+                    _logger.LogWarning($"No se pudo limpiar la carpeta temporal: {ex.Message}");
                 }
 
                 return Ok(respuesta);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "[API] Error durante el procesamiento de archivos");
+                // Manejo centralizado de errores con logging detallado
+                _logger.LogError(ex, "Error crítico durante el procesamiento de archivos");
                 return StatusCode(500, new
                 {
                     success = false,
@@ -124,31 +136,36 @@ namespace BuscadorParaleloEspeculativo.UI.Controllers
             }
         }
 
+        // Endpoint para consultar el estado actual del sistema
+        // Proporciona información sobre archivos procesados y estado del modelo
         [HttpGet("estado")]
         public IActionResult ObtenerEstado()
         {
             try
             {
+                // Obtiene datos actuales del procesador de archivos
                 var datosInterfaz = _procesadorArchivos.ObtenerDatosParaInterfaz();
+
+                // Obtiene estadísticas actuales del modelo de predicción
                 var estadisticasModelo = _modeloPrediccion.ObtenerEstadisticas();
 
                 return Ok(new
                 {
                     success = true,
-                    procesamiento = datosInterfaz,
+                    procesamiento = datosInterfaz,  // Estado completo del procesamiento
                     modelo = new
                     {
-                        entrenado = _modeloPrediccion.TotalBigramas > 0,
-                        bigramas = _modeloPrediccion.TotalBigramas,
-                        trigramas = _modeloPrediccion.TotalTrigramas,
-                        contextos = _modeloPrediccion.TotalContextos,
-                        estadisticas = estadisticasModelo
+                        entrenado = _modeloPrediccion.TotalBigramas > 0,  // Estado del modelo
+                        bigramas = _modeloPrediccion.TotalBigramas,       // Conteo de bigramas
+                        trigramas = _modeloPrediccion.TotalTrigramas,     // Conteo de trigramas
+                        contextos = _modeloPrediccion.TotalContextos,     // Total de contextos
+                        estadisticas = estadisticasModelo                 // Estadísticas detalladas
                     }
                 });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "[API] Error obteniendo estado del sistema");
+                _logger.LogError(ex, "Error al obtener el estado del sistema");
                 return StatusCode(500, new
                 {
                     success = false,
@@ -157,15 +174,20 @@ namespace BuscadorParaleloEspeculativo.UI.Controllers
             }
         }
 
+        // Endpoint para limpiar todos los datos del sistema
+        // Resetea tanto el procesador como el modelo a estado inicial
         [HttpPost("limpiar")]
         public IActionResult LimpiarDatos()
         {
             try
             {
+                // Limpia datos del procesador de archivos
                 _procesadorArchivos.LimpiarDatos();
+
+                // Resetea el modelo de predicción
                 _modeloPrediccion.LimpiarModelo();
 
-                _logger.LogInformation("[API] Datos limpiados exitosamente");
+                _logger.LogInformation("Sistema limpiado exitosamente - todos los datos han sido borrados");
 
                 return Ok(new
                 {
@@ -175,7 +197,7 @@ namespace BuscadorParaleloEspeculativo.UI.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "[API] Error limpiando datos");
+                _logger.LogError(ex, "Error durante la limpieza del sistema");
                 return StatusCode(500, new
                 {
                     success = false,

@@ -4,6 +4,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace BuscadorParaleloEspeculativo.UI.Controllers
 {
+    
+    /// Controlador que maneja las operaciones de predicción de texto
+    /// Implementa los endpoints para predecir la siguiente palabra basado en el contexto
+   
     [Route("api/[controller]")]
     [ApiController]
     public class PrediccionController : ControllerBase
@@ -12,6 +16,9 @@ namespace BuscadorParaleloEspeculativo.UI.Controllers
         private readonly ModeloPrediccion _modeloPrediccion;
         private readonly ProcesadorArchivos _procesadorArchivos;
 
+        
+        /// Constructor que inicializa las dependencias necesarias
+        
         public PrediccionController(ILogger<PrediccionController> logger,
             ModeloPrediccion modeloPrediccion,
             ProcesadorArchivos procesadorArchivos)
@@ -21,11 +28,16 @@ namespace BuscadorParaleloEspeculativo.UI.Controllers
             _procesadorArchivos = procesadorArchivos;
         }
 
+       
+        /// Endpoint principal para predecir la siguiente palabra basado en el contexto proporcionado
+        /// Utiliza modelos de bigramas y trigramas para generar sugerencias inteligentes
+        
         [HttpPost("predecir")]
         public IActionResult PredecirSiguientePalabra([FromBody] PrediccionRequest request)
         {
             try
             {
+                // Validación básica del contexto de entrada
                 if (string.IsNullOrWhiteSpace(request?.Contexto))
                 {
                     return BadRequest(new
@@ -36,7 +48,7 @@ namespace BuscadorParaleloEspeculativo.UI.Controllers
                     });
                 }
 
-                // Verificar si el modelo está entrenado
+                // Verificar si el modelo ha sido entrenado con datos
                 if (_modeloPrediccion.TotalBigramas == 0 && _modeloPrediccion.TotalTrigramas == 0)
                 {
                     return Ok(new
@@ -48,17 +60,19 @@ namespace BuscadorParaleloEspeculativo.UI.Controllers
                     });
                 }
 
+                // Preparar los parámetros de búsqueda
                 var contexto = request.Contexto.Trim();
-                var topK = Math.Min(Math.Max(request.TopK ?? 8, 1), 20); // Entre 1 y 20
+                var topK = Math.Min(Math.Max(request.TopK ?? 8, 1), 20); // Limitar entre 1 y 20 resultados
 
-                _logger.LogDebug($"[Predicción] Generando predicciones para: '{contexto}' (topK: {topK})");
+                _logger.LogDebug($"Generando predicciones para contexto: '{contexto}' con límite: {topK}");
 
-                // Obtener predicciones del modelo de ANGEL
+                // Llamar al modelo de predicción desarrollado por el equipo
                 var prediccionesRaw = _modeloPrediccion.PredecirSiguientePalabra(contexto, topK);
 
+                // Si no hay predicciones, informar al usuario
                 if (!prediccionesRaw.Any())
                 {
-                    _logger.LogInformation($"[Predicción] No se encontraron predicciones para: '{contexto}'");
+                    _logger.LogInformation($"No se encontraron predicciones para el contexto: '{contexto}'");
 
                     return Ok(new
                     {
@@ -72,21 +86,21 @@ namespace BuscadorParaleloEspeculativo.UI.Controllers
                     });
                 }
 
-                // Determinar método usado (trigrama vs bigrama)
+                // Determinar qué método de predicción se está usando
                 var palabrasContexto = contexto.ToLower().Split(' ', StringSplitOptions.RemoveEmptyEntries);
                 var metodoUsado = palabrasContexto.Length >= 2 ? "trigrama" : "bigrama";
 
-                // Formatear predicciones para la interfaz
+                // Formatear las predicciones para enviar al frontend
                 var prediccionesFormateadas = prediccionesRaw.Select((pred, index) => new {
                     palabra = pred.Palabra,
-                    relevancia = pred.Archivos.Count,
+                    relevancia = pred.Archivos.Count, // Cuántos archivos contienen esta palabra
                     archivos = pred.Archivos,
                     metodo = metodoUsado,
                     posicion = index + 1,
                     confianza = CalcularConfianza(pred.Archivos.Count, prediccionesRaw.Count)
                 }).ToList();
 
-                _logger.LogInformation($"[Predicción] Devolviendo {prediccionesFormateadas.Count} predicciones usando {metodoUsado}");
+                _logger.LogInformation($"Devolviendo {prediccionesFormateadas.Count} predicciones usando método {metodoUsado}");
 
                 return Ok(new
                 {
@@ -106,7 +120,7 @@ namespace BuscadorParaleloEspeculativo.UI.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"[Predicción] Error generando predicciones para: '{request?.Contexto}'");
+                _logger.LogError(ex, $"Error al generar predicciones para contexto: '{request?.Contexto}'");
 
                 return StatusCode(500, new
                 {
@@ -119,6 +133,10 @@ namespace BuscadorParaleloEspeculativo.UI.Controllers
             }
         }
 
+        
+        /// Obtiene las estadísticas actuales del modelo de predicción
+        /// Incluye información sobre bigramas, trigramas y capacidad del modelo
+       
         [HttpGet("estadisticas")]
         public IActionResult ObtenerEstadisticas()
         {
@@ -144,7 +162,7 @@ namespace BuscadorParaleloEspeculativo.UI.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "[Predicción] Error obteniendo estadísticas del modelo");
+                _logger.LogError(ex, "Error al obtener estadísticas del modelo");
 
                 return StatusCode(500, new
                 {
@@ -154,6 +172,10 @@ namespace BuscadorParaleloEspeculativo.UI.Controllers
             }
         }
 
+       
+        /// Busca palabras que comiencen con un prefijo específico
+        /// Útil para autocompletar mientras el usuario escribe
+        
         [HttpPost("buscar-prefijo")]
         public IActionResult BuscarPorPrefijo([FromBody] PrefijoBusquedaRequest request)
         {
@@ -168,17 +190,18 @@ namespace BuscadorParaleloEspeculativo.UI.Controllers
                     });
                 }
 
-                var limite = Math.Min(Math.Max(request.Limite ?? 10, 1), 50);
+                var limite = Math.Min(Math.Max(request.Limite ?? 10, 1), 50); // Entre 1 y 50 resultados
 
-                _logger.LogDebug($"[Búsqueda] Buscando palabras con prefijo: '{request.Prefijo}' (límite: {limite})");
+                _logger.LogDebug($"Buscando palabras con prefijo: '{request.Prefijo}' con límite: {limite}");
 
                 var resultados = _modeloPrediccion.BuscarPorPrefijo(request.Prefijo, limite);
 
+                // Formatear resultados para el frontend
                 var resultadosFormateados = resultados.Select(r => new {
                     palabra = r.Palabra,
                     archivos = r.Archivos,
                     relevancia = r.Relevancia,
-                    fuentes = r.Archivos.Take(3).ToList(), // Primeras 3 fuentes
+                    fuentes = r.Archivos.Take(3).ToList(), // Mostrar solo las primeras 3 fuentes
                     totalFuentes = r.Archivos.Count
                 }).ToList();
 
@@ -192,7 +215,7 @@ namespace BuscadorParaleloEspeculativo.UI.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"[Búsqueda] Error buscando prefijo: '{request?.Prefijo}'");
+                _logger.LogError(ex, $"Error al buscar prefijo: '{request?.Prefijo}'");
 
                 return StatusCode(500, new
                 {
@@ -202,6 +225,10 @@ namespace BuscadorParaleloEspeculativo.UI.Controllers
             }
         }
 
+      
+        /// Endpoint para diagnóstico del sistema
+        /// Proporciona información detallada sobre el estado del modelo y los datos procesados
+       
         [HttpGet("diagnostico")]
         public IActionResult ObtenerDiagnostico()
         {
@@ -243,7 +270,7 @@ namespace BuscadorParaleloEspeculativo.UI.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "[Diagnóstico] Error obteniendo diagnóstico del sistema");
+                _logger.LogError(ex, "Error al obtener diagnóstico del sistema");
 
                 return StatusCode(500, new
                 {
@@ -252,6 +279,11 @@ namespace BuscadorParaleloEspeculativo.UI.Controllers
                 });
             }
         }
+
+      
+        /// Valida si un contexto es válido para realizar predicciones
+        /// Determina qué métodos de predicción están disponibles según el contexto
+       
         public IActionResult ValidarContexto([FromBody] ValidacionContextoRequest request)
         {
             try
@@ -268,17 +300,19 @@ namespace BuscadorParaleloEspeculativo.UI.Controllers
                 var contexto = request.Contexto.Trim();
                 var palabras = contexto.ToLower().Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
+                // Crear objeto de validación con información útil
                 var validacion = new
                 {
                     contextValido = palabras.Length > 0,
                     numeroPalabras = palabras.Length,
-                    puedeUsarTrigramas = palabras.Length >= 2,
-                    puedeUsarBigramas = palabras.Length >= 1,
+                    puedeUsarTrigramas = palabras.Length >= 2, // Necesita al menos 2 palabras para trigramas
+                    puedeUsarBigramas = palabras.Length >= 1,  // Necesita al menos 1 palabra para bigramas
                     metodosDisponibles = new List<string>(),
                     ultimaPalabra = palabras.LastOrDefault(),
                     penultimaPalabra = palabras.Length >= 2 ? palabras[^2] : null
                 };
 
+                // Determinar qué métodos están disponibles
                 if (validacion.puedeUsarTrigramas)
                     ((List<string>)validacion.metodosDisponibles).Add("trigrama");
 
@@ -294,7 +328,7 @@ namespace BuscadorParaleloEspeculativo.UI.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"[Validación] Error validando contexto: '{request?.Contexto}'");
+                _logger.LogError(ex, $"Error al validar contexto: '{request?.Contexto}'");
 
                 return StatusCode(500, new
                 {
@@ -304,13 +338,22 @@ namespace BuscadorParaleloEspeculativo.UI.Controllers
             }
         }
 
-        // Métodos auxiliares
+        #region Métodos Auxiliares
+
+       
+        /// Calcula el porcentaje de confianza de una predicción
+        /// Basado en la relevancia relativa dentro del conjunto de predicciones
+        
         private double CalcularConfianza(int relevancia, int totalPredicciones)
         {
             if (totalPredicciones == 0) return 0.0;
             return Math.Round((double)relevancia / totalPredicciones * 100, 1);
         }
 
+        
+        /// Evalúa la precisión esperada del modelo basado en la cantidad de datos
+        /// Más bigramas y trigramas generalmente significa mejor precisión
+        
         private string CalcularPrecisionEsperada()
         {
             var totalBigramas = _modeloPrediccion.TotalBigramas;
@@ -322,6 +365,10 @@ namespace BuscadorParaleloEspeculativo.UI.Controllers
             return "Mínima";
         }
 
+       
+        /// Evalúa la cobertura del modelo basado en la cantidad de contextos disponibles
+        /// Más contextos significa mejor cobertura de diferentes situaciones
+        
         private string CalcularCobertura()
         {
             var totalContextos = _modeloPrediccion.TotalContextos;
@@ -331,30 +378,59 @@ namespace BuscadorParaleloEspeculativo.UI.Controllers
             if (totalContextos > 100) return "Limitada";
             return "Mínima";
         }
+
+        
     }
 
-    // Modelos para las requests
+    // Modelos de Request
+
+    
+    /// Modelo para las peticiones de predicción de texto
+    
     public class PrediccionRequest
     {
+        
+        /// Contexto de texto para generar la predicción
+       
         [Required]
         public string? Contexto { get; set; }
 
+       
+        /// Número máximo de predicciones a devolver (entre 1 y 20)
+        
         [Range(1, 20)]
         public int? TopK { get; set; } = 8;
     }
 
+   
+    /// Modelo para las peticiones de búsqueda por prefijo
+   
     public class PrefijoBusquedaRequest
     {
+        
+        /// Prefijo a buscar en las palabras procesadas
+       
         [Required]
         public string? Prefijo { get; set; }
 
+        
+        /// Límite de resultados a devolver (entre 1 y 50)
+       
         [Range(1, 50)]
         public int? Limite { get; set; } = 10;
     }
 
+ 
+    /// Modelo para las peticiones de validación de contexto
+   
     public class ValidacionContextoRequest
     {
+        
+        /// Contexto a validar para predicciones
+        
         [Required]
         public string? Contexto { get; set; }
     }
+
+    #endregion
 }

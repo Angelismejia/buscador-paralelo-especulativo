@@ -24,9 +24,9 @@ public class ModeloPrediccion
         TotalContextos = 0;
     }
 
-    /// <summary>
+   
     /// Entrena el modelo con contextos de palabras del procesador
-    /// </summary>
+  
     public void EntrenarModelo(List<ContextoPalabra> contextos)
     {
         Console.WriteLine($"[ModeloPrediccion] Iniciando entrenamiento con {contextos.Count} contextos...");
@@ -147,9 +147,8 @@ public class ModeloPrediccion
         }
     }
 
-    /// <summary>
     /// Predice la siguiente palabra basada en el contexto proporcionado
-    /// </summary>
+    
     public List<(string Palabra, List<string> Archivos)> PredecirSiguientePalabra(string contexto, int topK = 5)
     {
         // Verificar que el contexto no esté vacío
@@ -275,9 +274,9 @@ public class ModeloPrediccion
             .ToList();
     }
 
-    /// <summary>
+ 
     /// Limpia y normaliza una palabra para el procesamiento
-    /// </summary>
+
     private string LimpiarPalabra(string palabra)
     {
         if (string.IsNullOrWhiteSpace(palabra))
@@ -311,9 +310,9 @@ public class ModeloPrediccion
             .Replace("\r", "");
     }
 
-    /// <summary>
+    
     /// Verifica si una palabra es válida para incluir en el modelo
-    /// </summary>
+  
     private bool EsPalabraValida(string palabra)
     {
         // Filtros básicos de validación
@@ -330,9 +329,9 @@ public class ModeloPrediccion
         return true;
     }
 
-    /// <summary>
+   
     /// Obtiene estadísticas detalladas del modelo entrenado
-    /// </summary>
+   
     public object ObtenerEstadisticas()
     {
         // Calcular estadísticas del vocabulario
@@ -353,9 +352,9 @@ public class ModeloPrediccion
         };
     }
 
-    /// <summary>
+    
     /// Busca palabras que comiencen con el prefijo dado
-    /// </summary>
+    
     public List<(string Palabra, List<string> Archivos, int Relevancia)> BuscarPorPrefijo(string prefijo, int limite = 10)
     {
         if (string.IsNullOrWhiteSpace(prefijo))
@@ -409,9 +408,8 @@ public class ModeloPrediccion
             .ToList();
     }
 
-    /// <summary>
     /// Reinicia completamente el modelo eliminando todos los datos
-    /// </summary>
+   
     public void LimpiarModelo()
     {
         bigramas.Clear();
